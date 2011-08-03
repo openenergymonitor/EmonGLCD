@@ -18,9 +18,9 @@
 GLCD_ST7565 glcd;
 
 // fixed RF12 settings
-#define MYNODE 30            //node ID 30 reserved for base station
+#define MYNODE 28            //node ID 30 reserved for base station
 #define freq RF12_433MHZ     //frequency
-#define group 215            //network group 
+#define group 210            //network group 
 
 //########################################################################################################################
 //Data Structure to be received 
@@ -71,11 +71,18 @@ void loop () {
    
    glcd.setFont(font_courB18);
    glcd.drawString(0,30,str);
+   
+   
  
    //char fstr[10]; dtostrf((emontx.temp1/100.0),0,1,fstr); strcat(str,fstr); strcat(str,"C | ");
    //memset(str,NULL,sizeof(str));
    // Time since last update
    glcd.setFont(font_clR6x8);
+   
+   glcd.drawString(0,50,"Network Group: ");
+   itoa(group,str,10);
+   glcd.drawString(90,50,str);
+   
    int seconds = (int)((millis()-last)/1000.0);
    itoa(seconds,str,10);
    strcat(str,"s");
