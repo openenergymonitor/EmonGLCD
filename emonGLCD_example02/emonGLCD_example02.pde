@@ -7,6 +7,8 @@
 // Energy monitor specific example by Trystan Lea and Glyn Hudson
 // OpenEnergyMonitor.org
 //--------------------------------------------------------------------------------------
+#include <OneWire.h>
+#include <DallasTemperature.h>
 #include <GLCD_ST7565.h>
 #include <Ports.h>
 #include <RF12.h> // needed to avoid a linker error :(
@@ -20,7 +22,9 @@ GLCD_ST7565 glcd;
 // fixed RF12 settings
 #define MYNODE 28            //node ID 30 reserved for base station
 #define freq RF12_433MHZ     //frequency
-#define group 210            //network group 
+#define group 215            //network group 
+
+#define ONE_WIRE_BUS 5      //temperature sensor connection 
 
 //########################################################################################################################
 //Data Structure to be received 
@@ -36,6 +40,10 @@ int emontx_nodeID;    //node ID of emon tx, extracted from RF datapacket. Not tr
 
 unsigned long last;
 
+OneWire oneWire(ONE_WIRE_BUS);
+DallasTemperature sensors(&oneWire);
+double temp=0;
+
 void setup () {
     rf12_initialize(MYNODE, freq,group);
     
@@ -43,8 +51,10 @@ void setup () {
     glcd.backLight(255);
     last = millis();
     
+    sensors.begin(); //start up temp sensor
+    
     Serial.begin(9600);
-    Serial.println("emonGLCD example 01");
+    Serial.println("emonGLCD example 02");
   Serial.println("openenergymonitor.org");
   
   Serial.print("Node: "); 
@@ -71,8 +81,14 @@ void loop () {
         last = millis();
         Serial.print(emontx.ct);
         Serial.print("  ");
+        Serial.print(temp);
+        Serial.print("  ");
         Serial.println(emontx.supplyV);
     }
+    
+    //get data from temp sensor
+    sensors.requestTemperatures();
+    temp=(sensors.getTempCByIndex(0));
     
    glcd.setFont(font_clR6x8);
    glcd.drawString(0,0,"OpenEnergyMonitor");
@@ -86,7 +102,7 @@ void loop () {
    strcat(str,"W");
    
    glcd.setFont(font_courB18);
-   glcd.drawString(0,30,str);
+   glcd.drawString(0,25,str);
    
    
  
@@ -95,9 +111,14 @@ void loop () {
    // Time since last update
    glcd.setFont(font_clR6x8);
    
-   glcd.drawString(0,50,"Network Group: ");
+   glcd.drawString(0,45,"Network Group: ");
    itoa(group,str,10);
-   glcd.drawString(90,50,str);
+   glcd.drawString(90,45,str);
+   
+   glcd.drawString(0,55, "Room Temp: ");
+   dtostrf(temp,0,1,str); 
+   strcat(str,"C");
+   glcd.drawString(60,55,str);
    
    int seconds = (int)((millis()-last)/1000.0);
    itoa(seconds,str,10);
