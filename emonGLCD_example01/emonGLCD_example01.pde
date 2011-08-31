@@ -40,7 +40,7 @@ void setup () {
     rf12_initialize(MYNODE, freq,group);
     
     glcd.begin();
-    glcd.backLight(255);
+    glcd.backLight(255);   //255 = full brightness 
     last = millis();
     
     Serial.begin(9600);
