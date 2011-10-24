@@ -24,7 +24,7 @@
 GLCD_ST7565 glcd;
 
 // fixed RF12 settings
-#define MYNODE 28            //node ID 30 reserved for base station
+#define MYNODE 20            //node ID 30 reserved for base station
 #define freq RF12_433MHZ     //frequency
 #define group 210            //network group 
 
@@ -141,9 +141,12 @@ void loop () {
     //last updated
    glcd.drawString(0,57, "Last update: ");
    int seconds = (int)((millis()-last)/1000.0);
-   itoa(seconds,str,10);
-   strcat(str,"s ago");
-   glcd.drawString(50,57,str);
+   if (seconds>300) 
+     glcd.drawString(50,57,"ages ago");
+   else{
+     itoa(seconds,str,10);
+     strcat(str,"s ago");
+   glcd.drawString(50,57,str);}
    
    glcd.setFont(font_ncenR08);
    glcd.drawString(89,54, "{alpha}");
@@ -169,7 +172,7 @@ void loop () {
      
     
    //for demo, increase power value when mode-change switch is pressed. Need to put pull dow resistor to top pin floating up to analog read 800 or so 
-     if (analogRead(1)>1020) emontx.ct=emontx.ct+5;
+     //if (analogRead(1)>1020) emontx.ct=emontx.ct+5;
      
 
 }
