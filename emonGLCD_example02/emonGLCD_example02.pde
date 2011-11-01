@@ -6,6 +6,8 @@
 //
 // Energy monitor specific example by Trystan Lea and Glyn Hudson
 // OpenEnergyMonitor.org
+
+//for improved contrast edit line 134 of GLCD_ST7565.cpp to be: st7565_Set_Brightness(0x18);
 //--------------------------------------------------------------------------------------
 #include <OneWire.h>
 #include <DallasTemperature.h>
@@ -26,12 +28,12 @@ GLCD_ST7565 glcd;
 // fixed RF12 settings
 #define MYNODE 20            //node ID 30 reserved for base station
 #define freq RF12_433MHZ     //frequency
-#define group 210            //network group 
+#define group 210            //network group, must be same as emonTx and emonBase
 
-#define ONE_WIRE_BUS 5      //temperature sensor connection 
+#define ONE_WIRE_BUS 5      //temperature sensor connection - hardwired 
 
 //########################################################################################################################
-//Data Structure to be received 
+//Data Structure to be received - must be the same structure as transmitted by emonTx
 //########################################################################################################################
 typedef struct {
   	  int ct;		// current transformer
@@ -55,7 +57,7 @@ void setup () {
     rf12_initialize(MYNODE, freq,group);
     
     glcd.begin();
-    glcd.backLight(255);
+    glcd.backLight(150);
     last = millis();
     
     sensors.begin(); //start up temp sensor
@@ -162,17 +164,15 @@ void loop () {
    
    //turn LED from green > red when power goes over 1Kw
    if (emontx.ct>1000){
-   digitalWrite(9, LOW);    // set the red LED off
-   digitalWrite(8, HIGH);    // set the green LED on
+   digitalWrite(8, LOW);    // set the red LED off
+   digitalWrite(9, HIGH);    // set the green LED on
    }
      else {
-   digitalWrite(8, LOW);    // set the green LED off
-   digitalWrite(9, HIGH);    // set the red LED on
+   digitalWrite(9, LOW);    // set the green LED off
+   digitalWrite(8, HIGH);    // set the red LED on
      }
      
-    
-   //for demo, increase power value when mode-change switch is pressed. Need to put pull dow resistor to top pin floating up to analog read 800 or so 
-     //if (analogRead(1)>1020) emontx.ct=emontx.ct+5;
+  
      
 
 }
