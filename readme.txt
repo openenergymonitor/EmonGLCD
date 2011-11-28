@@ -1,5 +1,4 @@
-                                                  
-emonGLCD open-source wireless graphical display
+open-source wireless graphical display - arduino code compatialbe 
 ***********************************
 
 IN DEVELOPMENT 
