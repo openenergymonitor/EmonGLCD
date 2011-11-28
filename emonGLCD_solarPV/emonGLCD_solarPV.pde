@@ -40,8 +40,8 @@
     #define ONE_WIRE_BUS 5      //temperature sensor connection - hardwired 
     const int greenLED=8;       
     const int redLED=9;
-    const int switchpin=14;
-    const int LDRpin=4;    
+    const int switchpin=15;	//digital pin of onboard pushswitch 
+    const int LDRpin=4;    	//analog pin of onboard lightsensor 
     double cval, cval2, cval3, cval4;  //values to calulate smoothing
 //--------------------------------------------------------------------------------------------
 
