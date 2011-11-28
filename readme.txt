@@ -1,4 +1,3 @@
-
                                                   
 emonGLCD open-source wireless graphical display
 ***********************************
@@ -16,3 +15,4 @@ http://jeelabs.net/projects/cafe/wiki/GLCDlib
 photos and video of example 02 in action are up on the documentation page: 
 
 openenergymonitor.org/emon/emonglcd
+Schymatic and PCB board design: http://solderpad.com/openenergymon/emonglcd/
