@@ -18,11 +18,12 @@ OneWire library: http://www.pjrc.com/teensy/td_libs_OneWire.html
 Dallas Temperature library: milesburton.com/Dallas_Temperature_Control_Library
 ---------------------------------------------------------------------------------------------
 
+Note: for improved display contrast edit line 134 of GLCD_ST7565.cpp in GLCDlib to be: st7565_Set_Brightness(0x18);
+
+
+emonGLCD sketch examples (currently use Arduino 23):
 
 example 02: Standard single CT energy monitor display with horizontal bar
 
 solarPV type 1 and 2: Solar PV monitoring display, both consumption and generation  
 
-
-openenergymonitor.org/emon/emonglcd
-Schymatic and PCB board design: http://solderpad.com/openenergymon/emonglcd/
