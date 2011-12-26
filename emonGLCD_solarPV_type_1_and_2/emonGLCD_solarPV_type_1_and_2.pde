@@ -22,7 +22,7 @@
 //-------------------------------------------------------------------------------------------------------------------------
 
 #include <OneWire.h>		  	//http://www.pjrc.com/teensy/td_libs_OneWire.html
-#include <DallasTemperature.h>   	//http://milesburton.com/Dallas_Temperature_Control_Library
+#include <DallasTemperature.h>   	// http://download.milesburton.com/Arduino/MaximTemperature/ (372 for Arduino 1.0)
 
 //JeeLab libraires - 			http://jeelabs.net/projects/cafe/wiki
 #include <GLCD_ST7565.h>

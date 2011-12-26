@@ -15,7 +15,9 @@ http://jeelabs.net/projects/cafe/wiki/RTClib 	-needed for Solar PV example
 
 On-board DS18B20 digital temperature sensor needs:
 OneWire library: http://www.pjrc.com/teensy/td_libs_OneWire.html
-Dallas Temperature library: milesburton.com/Dallas_Temperature_Control_Library
+Dallas Temperature library: http://download.milesburton.com/Arduino/MaximTemperature/ (version 372 works with Arduino 1.0) 
+
+
 ---------------------------------------------------------------------------------------------
 
 Note: for improved display contrast edit line 134 of GLCD_ST7565.cpp in GLCDlib to be: st7565_Set_Brightness(0x18);

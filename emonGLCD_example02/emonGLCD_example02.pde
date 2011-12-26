@@ -10,7 +10,7 @@
 //for improved contrast edit line 134 of GLCD_ST7565.cpp to be: st7565_Set_Brightness(0x18);
 //--------------------------------------------------------------------------------------
 #include <OneWire.h>
-#include <DallasTemperature.h>
+#include <DallasTemperature.h>  //http://download.milesburton.com/Arduino/MaximTemperature/
 #include <GLCD_ST7565.h>
 #include <Ports.h>
 #include <RF12.h> // needed to avoid a linker error :(
