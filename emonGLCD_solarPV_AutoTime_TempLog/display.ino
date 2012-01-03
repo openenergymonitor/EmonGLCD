@@ -64,20 +64,7 @@ void draw_main_screen()
   if ((millis()-last_emontx)>10000) glcd.drawString_P(32,58,PSTR("RF fail"));
 
   glcd.refresh();
-                     
-  //--------------------------------------------------------------------
-  // Turn off backlight and indicator LED's between 12pm and 6am
-  //-------------------------------------------------------------------- 
-  DateTime now = RTC.now();
-  int hour = now.hour();                  //get hour digit in 24hr from software RTC
-   
-  if ((hour > 23) ||  (hour < 6)) {
-    night=1; 
-    glcd.backLight(0);
-  } else {
-    night=0; 
-    glcd.backLight(200); 
-  }
+                    
 }
 
 void draw_page_two()
@@ -101,6 +88,23 @@ void draw_page_two()
 
   glcd.refresh();
   
+}
+
+void backlight_control()
+{
+  //--------------------------------------------------------------------
+  // Turn off backlight and indicator LED's between 12pm and 6am
+  //-------------------------------------------------------------------- 
+  DateTime now = RTC.now();
+  int hour = now.hour();                  //get hour digit in 24hr from software RTC
+   
+  if ((hour > 23) ||  (hour < 6)) {
+    night=1; 
+    glcd.backLight(0);
+  } else {
+    night=0; 
+    glcd.backLight(200); 
+  }
 }
 
 //--------------------------------------------------------------------

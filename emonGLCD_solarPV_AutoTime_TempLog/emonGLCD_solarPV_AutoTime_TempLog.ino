@@ -87,9 +87,9 @@ int hour;
 // Flow control
 //-------------------------------------------------------------------------------------------- 
 int view = 1;                                // Used to control which screen view is shown
-int update_display = 1;                      // Used to control when the display is updated
-unsigned long last_temp;                     // Used to count time from last temperature update
 unsigned long last_emontx;                   // Used to count time from last emontx update
+unsigned long slow_update;                   // Used to count time for slow 10s events
+unsigned long fast_update;                   // Used to count time for fast 100ms events
   
 //--------------------------------------------------------------------------------------------
 // Setup
@@ -136,7 +136,6 @@ void loop () {
           
           delay(100);                             // delay to make sure printing finished
           power_calculations();                   // do the power calculations
-          update_display = 1;                     // indicate we are ready to update display
         }
         
         if (node_id == 15)                        // ==== EMONBASE ====
@@ -157,37 +156,36 @@ void loop () {
     }
     
     //--------------------------------------------------------------------
-    // Get temperatue from onboard sensor - every 10s
+    // Things to do every 10s
     //--------------------------------------------------------------------
-    if ((millis()-last_temp)>10000){
+    if ((millis()-slow_update)>10000)
+    {
+       slow_update = millis();
+       
+       // Control led's
+       led_control();
+       backlight_control();
+       
+       // Get temperatue from onboard sensor
        sensors.requestTemperatures();
        temp = (sensors.getTempCByIndex(0));
-       last_temp = millis();
-       
        if (temp > maxtemp) maxtemp = temp;
        if (temp < mintemp) mintemp = temp;
-       
-       if ((millis()-last_emontx)>10000) update_display = 1;                  // if display was not updated recently by emontx then set for update
-    }
+   }
 
     //--------------------------------------------------------------------
     // Control toggling of screen pages
     //--------------------------------------------------------------------    
-    int last_view = view;
     if (digitalRead(switchpin) == TRUE) view = 2; else view = 1;
-    if (last_view != view) update_display = 1;
 
     //--------------------------------------------------------------------
-    // Update the display...
+    // Update the display every 200ms
     //--------------------------------------------------------------------
-    if (update_display)
+    if ((millis()-fast_update)>200)
     {
-      Serial.println("update");
-      led_control();
+      fast_update = millis();
       if (view == 1) draw_main_screen();
       if (view == 2) draw_page_two();
-      
-      update_display = 0;
     }
     
 } //end loop
