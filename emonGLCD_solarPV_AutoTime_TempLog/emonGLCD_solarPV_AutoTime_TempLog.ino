@@ -23,6 +23,7 @@
 // http://openenergymonitor.org/emon/license
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
+#define DEBUG
 
 #include <OneWire.h>		    // http://www.pjrc.com/teensy/td_libs_OneWire.html
 #include <DallasTemperature.h>      // http://download.milesburton.com/Arduino/MaximTemperature/ (3.7.2 Beta needed for Arduino 1.0)
@@ -100,8 +101,10 @@ void setup () {
     glcd.begin(0x18);    //begin glcd library and set contrast 0x20 is max, 0x18 seems to look best on emonGLCD
     glcd.backLight(200); //max 255
    
-    Serial.begin(9600);
-    print_glcd_setup();
+    #ifdef DEBUG 
+      Serial.begin(9600);
+      print_glcd_setup();
+    #endif
     
     pinMode(greenLED, OUTPUT); 
     pinMode(redLED, OUTPUT);  
@@ -132,7 +135,9 @@ void loop () {
         {
           last_emontx = millis();                 // set time of last update to now
           emontx = *(PayloadTX*) rf12_data;       // get emontx payload data
-          print_emontx_payload();                 // print data to serial
+          #ifdef DEBUG 
+            print_emontx_payload();               // print data to serial
+          #endif  
           
           delay(100);                             // delay to make sure printing finished
           power_calculations();                   // do the power calculations
@@ -141,7 +146,9 @@ void loop () {
         if (node_id == 15)                        // ==== EMONBASE ====
         {
           emonbase = *(PayloadBase*) rf12_data;   // get emonbase payload data
-          print_emonbase_payload();               // print data to serial
+          #ifdef DEBUG 
+            print_emonbase_payload();             // print data to serial
+          #endif  
           RTC.adjust(DateTime(2012, 1, 1, emonbase.hour, emonbase.mins, emonbase.sec));  // adjust emonglcd software real time clock
           
           delay(100);                             // delay to make sure printing and clock setting finished
@@ -150,7 +157,9 @@ void loop () {
           int i = 0; while (!rf12_canSend() && i<10) {rf12_recvDone(); i++;}  // if ready to send + exit loop if it gets stuck as it seems too
           rf12_sendStart(0, &emonglcd, sizeof emonglcd);                      // send emonglcd data
           rf12_sendWait(0);
-          Serial.println("3 emonglcd sent");                                  // print status
+          #ifdef DEBUG 
+            Serial.println("3 emonglcd sent");                                // print status
+          #endif                               
         }
       }
     }
