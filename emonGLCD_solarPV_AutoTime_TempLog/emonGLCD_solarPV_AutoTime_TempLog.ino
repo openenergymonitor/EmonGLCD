@@ -51,10 +51,13 @@ const int LDRpin=4;    		    // analog pin of onboard lightsensor
 #define freq RF12_433MHZ     //frequency - match to same frequency as RFM12B module (change to 868Mhz or 915Mhz if appropriate)
 #define group 210            //network group, must be same as emonTx and emonBase
 
+const int emonTx_nodeID = 10;
+const int emonBase_nodeID = 15; 
+
 //---------------------------------------------------
 // Data structures for transfering data between units
 //---------------------------------------------------
-typedef struct { int power, battery; } PayloadTX;
+typedef struct { int power, gen, battery; } PayloadTX;
 PayloadTX emontx;    
 
 typedef struct { int temperature; } PayloadGLCD;
@@ -131,7 +134,7 @@ void loop () {
       {
         int node_id = (rf12_hdr & 0x1F);
         
-        if (node_id == 10)                        // === EMONTX ====
+        if (node_id == emonTx_nodeID)                        // === EMONTX node ID ====
         {
           last_emontx = millis();                 // set time of last update to now
           emontx = *(PayloadTX*) rf12_data;       // get emontx payload data
@@ -143,7 +146,7 @@ void loop () {
           power_calculations();                   // do the power calculations
         }
         
-        if (node_id == 15)                        // ==== EMONBASE ====
+        if (node_id == emonBase_nodeID)                        // ==== EMONBASE node ID ====
         {
           emonbase = *(PayloadBase*) rf12_data;   // get emonbase payload data
           #ifdef DEBUG 
@@ -210,10 +213,10 @@ void power_calculations()
   hour = now.hour();
   if (last_hour == 23 && hour == 00) { wh_gen = 0; wh_consuming = 0; }
   
-  gen = 0; // emontx.gen;  if (gen<100) gen=0;	// remove noise offset 
+  gen = emontx.gen;  if (gen<100) gen=0;	// remove noise offset 
   consuming = emontx.power; 		        // for type 1 solar PV monitoring
   grid = emontx.power - gen;		        // for type 1 solar PV monitoring
-  // grid=emontx.grid; 		         	// for type 2 solar PV monitoring                     
+  //grid=emontx.grid; 		         	// for type 2 solar PV monitoring                     
   // consuming=gen + emontx.grid; 	        // for type 2 solar PV monitoring - grid should be positive when importing and negastive when exporting. Flip round CT cable clap orientation if not
          
   if (gen > consuming) {
