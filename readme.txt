@@ -21,7 +21,10 @@ OneWire library: http://www.pjrc.com/teensy/td_libs_OneWire.html
 
 emonGLCD sketch examples - updated to Arduino 1.0 (Dec 2011)
 
-example 02: Standard single CT energy monitor display with horizontal bar
+Single CT_AutoTime_TempLog: for dispaying data from single CT emonTx, and posting on-board temperature online to emoncms with emonBase/NanodeRF. Also gets time from interent via NanodeRF. Use with Nanode RF_singleCT_RTCrelay_GLCDtemp example
+
+solarPV_AutoTme_TempLog - for displaying data from 2CT solar PV monitoring emonTx (type 1 and 2 - see comments in sketch). Posts room temperature online to emoncms via emonBase/NanodeRF. Also gets current time for interent via NanodeRF. Use with NanodeRf_singleCT_RTcrealy_GLCDtemp example but add in commented out lines to send multiple power values online to emoncms. 
+
 
 solarPV type 1 and 2: Solar PV monitoring display, both consumption and generation display (see solar PV documentation link above) 
 
