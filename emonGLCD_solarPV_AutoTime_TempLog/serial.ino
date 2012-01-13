@@ -16,6 +16,8 @@ void print_emontx_payload()
 {
   Serial.println();
   Serial.print("1 emontx: ");
+  Serial.print(emontx.gen);
+  Serial.print(' ');
   Serial.print(emontx.power);
   Serial.print(' ');
   Serial.println(emontx.battery);

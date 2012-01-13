@@ -57,7 +57,7 @@ const int emonBase_nodeID = 15;
 //---------------------------------------------------
 // Data structures for transfering data between units
 //---------------------------------------------------
-typedef struct { int power, gen, battery; } PayloadTX;
+typedef struct { int gen, power, battery; } PayloadTX;
 PayloadTX emontx;    
 
 typedef struct { int temperature; } PayloadGLCD;
@@ -167,6 +167,13 @@ void loop () {
       }
     }
     
+    if (millis()<50000){   //reset min and max at the beginning of the sketch 
+      mintemp=0;
+      maxtemp=0;}
+      
+   if ((millis()>50000) && (millis() < 60000))   
+     mintemp=temp;
+     
     //--------------------------------------------------------------------
     // Things to do every 10s
     //--------------------------------------------------------------------
