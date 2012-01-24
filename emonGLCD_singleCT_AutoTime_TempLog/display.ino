@@ -57,7 +57,7 @@ void draw_main_screen()
   glcd.setFont(font_helvB12);  		//big bold font   
   glcd.drawString(88,50,str);  
 
-  //if ((millis()-last_emontx)>10000) glcd.drawString_P(32,58,PSTR("RF fail"));
+  if ((millis()-last_emontx)>10000) glcd.drawString_P(64,0,PSTR("RF fail"));
 
   glcd.refresh();
                     
