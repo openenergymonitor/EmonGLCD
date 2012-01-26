@@ -109,8 +109,7 @@ void setup () {
     temp = (sensors.getTempCByIndex(0));     // get inital temperture reading
     mintemp = temp; maxtemp = temp;          // reset min and max
     
-    RTC.begin(DateTime(__DATE__, __TIME__));	//load time and time from computer into sofware RTC
-    
+    RTC.begin(DateTime("Dec  8 2011" , "12:00:00")); //start up software RTC - this time will be updated to correct tme from the interent via the emonBase
 }
 //--------------------------------------------------------------------------------------------
 

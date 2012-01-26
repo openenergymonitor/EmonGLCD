@@ -17,6 +17,8 @@ void draw_main_screen()
   glcd.setFont(font_clR6x8);             
   glcd.drawString_P(0,0,PSTR("POWER NOW:"));
   glcd.drawString_P(0,38,PSTR("ENERGY TODAY:"));
+
+  if ((millis()-last_emontx)>10000) glcd.drawString_P(64,0,PSTR("RF fail"));
    
   glcd.setFont(font_helvB24);  		//big bold font
                  
@@ -57,7 +59,7 @@ void draw_main_screen()
   glcd.setFont(font_helvB12);  		//big bold font   
   glcd.drawString(88,50,str);  
 
-  if ((millis()-last_emontx)>10000) glcd.drawString_P(64,0,PSTR("RF fail"));
+  
 
   glcd.refresh();
                     
@@ -94,7 +96,7 @@ void backlight_control()
   DateTime now = RTC.now();
   int hour = now.hour();                  //get hour digit in 24hr from software RTC
    
-  if ((hour > 1) &&  (hour < 6)) {
+  if ((hour > 1) &&  (hour < 6)) {     
     night=1; 
     glcd.backLight(0);
   } else {
