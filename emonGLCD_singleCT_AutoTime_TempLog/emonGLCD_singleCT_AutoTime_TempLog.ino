@@ -34,7 +34,7 @@
 GLCD_ST7565 glcd;
  
 #define ONE_WIRE_BUS 5              // temperature sensor connection - hard wired 
-const int greenLED=8;               // Green tri-color LED
+const int greenLED=6;               // Green tri-color LED - 8 on emonGLCD V1.2
 const int redLED=9;                 // Red tri-color LED
 const int switchpin=15;		    // digital pin of onboard pushswitch 
 const int LDRpin=4;    		    // analog pin of onboard lightsensor 
@@ -44,7 +44,7 @@ const int LDRpin=4;    		    // analog pin of onboard lightsensor
 //--------------------------------------------------------------------------------------------
 #define MYNODE 20            //Should be unique on network, node ID 30 reserved for base station
 #define freq RF12_433MHZ     //frequency - match to same frequency as RFM12B module (change to 868Mhz or 915Mhz if appropriate)
-#define group 210            //network group, must be same as emonTx and emonBase
+#define group 210 //network group, must be same as emonTx and emonBase
 
 //---------------------------------------------------
 // Data structures for transfering data between units
@@ -181,7 +181,7 @@ void loop () {
     //--------------------------------------------------------------------
     // Control toggling of screen pages
     //--------------------------------------------------------------------    
-    if (digitalRead(switchpin) == TRUE) view = 2; else view = 1;
+    //if (digitalRead(switchpin) == TRUE) view = 2; else view = 1; - switchs don't work on emonGLCD V1.3
 
     //--------------------------------------------------------------------
     // Update the display every 200ms

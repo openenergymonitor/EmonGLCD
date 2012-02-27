@@ -39,7 +39,7 @@
 GLCD_ST7565 glcd;
  
 #define ONE_WIRE_BUS 5              // temperature sensor connection - hard wired 
-const int greenLED=8;               // Green tri-color LED
+const int greenLED=6;               // Green tri-color LED - dig 8 for emonGLCD V1.2
 const int redLED=9;                 // Red tri-color LED
 const int switchpin=15;		    // digital pin of onboard pushswitch 
 const int LDRpin=4;    		    // analog pin of onboard lightsensor 
@@ -184,7 +184,7 @@ void loop () {
        
        // Control led's
        led_control();
-       backlight_control();
+       //backlight_control(); - issue when emonGLCD does not receive correct time from base station display switches off - disable auto switch off at night as a precution 
        
        // Get temperatue from onboard sensor
        sensors.requestTemperatures();
@@ -196,7 +196,7 @@ void loop () {
     //--------------------------------------------------------------------
     // Control toggling of screen pages
     //--------------------------------------------------------------------    
-    if (digitalRead(switchpin) == TRUE) view = 2; else view = 1;
+    //if (digitalRead(switchpin) == TRUE) view = 2; else view = 1; - switches don't work on emonGLCD V1.3
 
     //--------------------------------------------------------------------
     // Update the display every 200ms
