@@ -25,6 +25,5 @@ Single CT_AutoTime_TempLog: for dispaying data from single CT emonTx, and postin
 
 solarPV_AutoTme_TempLog - for displaying data from 2CT solar PV monitoring emonTx (type 1 and 2 - see comments in sketch). Posts room temperature online to emoncms via emonBase/NanodeRF. Also gets current time for interent via NanodeRF. Use with NanodeRf_singleCT_RTcrealy_GLCDtemp example but add in commented out lines to send multiple power values online to emoncms. 
 
-
-solarPV type 1 and 2: Solar PV monitoring display, both consumption and generation display (see solar PV documentation link above) 
+emonGLCD Tester - simple sketch to test the function of the temperature sensor, light sensor and tri-colour LED's. Example can be used with or without the LCD and without the RFM12B. If LCD is connected results will be displayed on LCD. 
 
