@@ -2,7 +2,7 @@
 // emonGLCD Solar PV monitor example - compatiable with Arduino 1.0 
 
 // emonGLCD documentation http://openEnergyMonitor.org/emon/emonglcd
-// solar PV monitor build documentation: http://openenergymonitor.org/emon/solarpv
+// solar PV monitor build documentation: http://openenergymonitor.org/emon/applications/solarpv
 
 // For use with emonTx setup with 2CT one monitoring consumption and the other monitoring gen
 // RTC to reset Kwh counters at midnight is implemented is software. 
