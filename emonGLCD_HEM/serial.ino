@@ -16,9 +16,9 @@ void print_emontx_payload()
 {
   Serial.println();
   Serial.print("1 emontx: ");
-  Serial.print(emontx.power);
+  Serial.print(emontx.power1);
   Serial.print(' ');
-  Serial.print(emontx.battery);
+  Serial.print(emontx.voltage);
   Serial.print(" | ");
   Serial.println(millis()-last_emontx);
 }

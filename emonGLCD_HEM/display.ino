@@ -17,6 +17,8 @@ void draw_main_screen()
   glcd.setFont(font_clR6x8);             
   glcd.drawString_P(0,0,PSTR("POWER NOW:"));
   glcd.drawString_P(0,38,PSTR("ENERGY TODAY:"));
+
+  if ((millis()-last_emontx)>10000) glcd.drawString_P(64,0,PSTR("RF fail"));
    
   glcd.setFont(font_helvB24);  		//big bold font
                  
@@ -57,7 +59,7 @@ void draw_main_screen()
   glcd.setFont(font_helvB12);  		//big bold font   
   glcd.drawString(88,50,str);  
 
-  if ((millis()-last_emontx)>10000) glcd.drawString_P(64,0,PSTR("RF fail"));
+  
 
   glcd.refresh();
                     
@@ -103,21 +105,3 @@ void backlight_control()
   }
 }
 
-//--------------------------------------------------------------------
-//Change color of LED on top of emonGLCD, red if consumption exceeds gen or green if gen is greater than consumption 
-//-------------------------------------------------------------------- 
-void led_control()
-{
-  if ((gen>0) && (night==0)) {
-    if (gen > consuming) {  //show green LED when gen>consumption   
-      digitalWrite(greenLED, HIGH);    
-      digitalWrite(redLED, LOW); 
-    } else { //red if consumption>gen
-      digitalWrite(redLED, HIGH);   
-      digitalWrite(greenLED, LOW);    
-    }
-  } else{ //Led's off at night and when solar PV is not generating
-    digitalWrite(redLED, LOW);
-    digitalWrite(greenLED, LOW);
-  }
-}

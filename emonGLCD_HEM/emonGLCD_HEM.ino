@@ -1,10 +1,11 @@
 //------------------------------------------------------------------------------------------------------------------------------------------------
-// emonGLCD Single CT example
-// to be used with nanode auto update time base example
+// emonGLCD Home Energy Monitor example
+// to be used with nanode Home Energy Monitor example
+
+// Uses power1 variable - change as required if your using different ports
 
 // emonGLCD documentation http://openEnergyMonitor.org/emon/emonglcd
 
-// For use with emonTx setup with one CT
 // RTC to reset Kwh counters at midnight is implemented is software. 
 // Correct time is updated via NanodeRF which gets time from internet
 // Temperature recorded on the emonglcd is also sent to the NanodeRF for online graphing
@@ -49,8 +50,8 @@ const int LDRpin=4;    		    // analog pin of onboard lightsensor
 //---------------------------------------------------
 // Data structures for transfering data between units
 //---------------------------------------------------
-typedef struct { int power, battery; } PayloadTX;
-PayloadTX emontx;    
+typedef struct { int power1, power2, power3, voltage; } PayloadTX;
+PayloadTX emontx;
 
 typedef struct { int temperature; } PayloadGLCD;
 PayloadGLCD emonglcd;
@@ -167,8 +168,6 @@ void loop () {
     {
        slow_update = millis();
        
-       // Control led's
-       led_control();
        backlight_control();
        
        // Get temperatue from onboard sensor
@@ -204,27 +203,18 @@ void power_calculations()
   DateTime now = RTC.now();
   int last_hour = hour;
   hour = now.hour();
-  if (last_hour == 23 && hour == 00) { wh_gen = 0; wh_consuming = 0; }
   
-  gen = 0; // emontx.gen;  if (gen<100) gen=0;	// remove noise offset 
-  consuming = emontx.power; 		        // for type 1 solar PV monitoring
-  grid = emontx.power - gen;		        // for type 1 solar PV monitoring
-  // grid=emontx.grid; 		         	// for type 2 solar PV monitoring                     
-  // consuming=gen + emontx.grid; 	        // for type 2 solar PV monitoring - grid should be positive when importing and negastive when exporting. Flip round CT cable clap orientation if not
-         
-  if (gen > consuming) {
-    importing=0; 			        //set importing flag 
-    grid= grid*-1;			        //set grid to be positive - the text 'importing' will change to 'exporting' instead. 
-  } else importing=1;
+  if (last_hour == 23 && hour == 00) { wh_consuming = 0; }
+  
+  consuming = emontx.power2; 		        // for type 1 solar PV monitoring
             
   //--------------------------------------------------
   // kWh calculation
   //--------------------------------------------------
   unsigned long lwhtime = whtime;
   whtime = millis();
-  double whInc = gen * ((whtime-lwhtime)/3600000.0);
-  wh_gen=wh_gen+whInc;
-  whInc = consuming *((whtime-lwhtime)/3600000.0);
+
+  double whInc = consuming *((whtime-lwhtime)/3600000.0);
   wh_consuming=wh_consuming+whInc;
   //---------------------------------------------------------------------- 
 }
