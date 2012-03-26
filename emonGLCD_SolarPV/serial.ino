@@ -16,11 +16,11 @@ void print_emontx_payload()
 {
   Serial.println();
   Serial.print("1 emontx: ");
-  Serial.print(emontx.gen);
+  Serial.print(emontx.power1);
   Serial.print(' ');
-  Serial.print(emontx.power);
+  Serial.print(emontx.power2);
   Serial.print(' ');
-  Serial.println(emontx.battery);
+  Serial.println(emontx.Vrms);
 }
 
 void print_emonbase_payload()

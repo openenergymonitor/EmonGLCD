@@ -57,8 +57,8 @@ const int emonBase_nodeID = 15;
 //---------------------------------------------------
 // Data structures for transfering data between units
 //---------------------------------------------------
-typedef struct { int gen, power, battery; } PayloadTX;
-PayloadTX emontx;    
+typedef struct { int power1, power2, power3, Vrms; } PayloadTX;                                                          // neat way of packaging data for RF comms
+PayloadTX emontx; 
 
 typedef struct { int temperature; } PayloadGLCD;
 PayloadGLCD emonglcd;
@@ -90,7 +90,6 @@ int hour;
 //-------------------------------------------------------------------------------------------- 
 // Flow control
 //-------------------------------------------------------------------------------------------- 
-int view = 1;                                // Used to control which screen view is shown
 unsigned long last_emontx;                   // Used to count time from last emontx update
 unsigned long slow_update;                   // Used to count time for slow 10s events
 unsigned long fast_update;                   // Used to count time for fast 100ms events
@@ -192,20 +191,14 @@ void loop () {
        if (temp > maxtemp) maxtemp = temp;
        if (temp < mintemp) mintemp = temp;
    }
-
-    //--------------------------------------------------------------------
-    // Control toggling of screen pages
-    //--------------------------------------------------------------------    
-    //if (digitalRead(switchpin) == TRUE) view = 2; else view = 1; - switches don't work on emonGLCD V1.3
-
+   
     //--------------------------------------------------------------------
     // Update the display every 200ms
     //--------------------------------------------------------------------
     if ((millis()-fast_update)>200)
     {
       fast_update = millis();
-      if (view == 1) draw_main_screen();
-      if (view == 2) draw_page_two();
+      draw_main_screen();
     }
     
 } //end loop
@@ -221,9 +214,9 @@ void power_calculations()
   hour = now.hour();
   if (last_hour == 23 && hour == 00) { wh_gen = 0; wh_consuming = 0; }
   
-  gen = emontx.gen;  if (gen<100) gen=0;	// remove noise offset 
-  consuming = emontx.power; 		        // for type 1 solar PV monitoring
-  grid = emontx.power - gen;		        // for type 1 solar PV monitoring
+  gen = emontx.power2;  if (gen<100) gen=0;	// remove noise offset 
+  consuming = emontx.power1; 		        // for type 1 solar PV monitoring
+  grid = consuming - gen;		        // for type 1 solar PV monitoring
   //grid=emontx.grid; 		         	// for type 2 solar PV monitoring                     
   // consuming=gen + emontx.grid; 	        // for type 2 solar PV monitoring - grid should be positive when importing and negastive when exporting. Flip round CT cable clap orientation if not
          
