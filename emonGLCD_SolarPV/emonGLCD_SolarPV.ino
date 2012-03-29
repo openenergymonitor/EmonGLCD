@@ -11,8 +11,9 @@
 // Temperature recorded on the emonglcd is also sent to the NanodeRF for online graphing
 
 // this sketch is currently setup for type 1 solar PV monitoring where CT's monitor generation and consumption separately
+// The sketch assumes emonx.power1 is consuming/grid power and emontx.power2 is solarPV generation
 // to use this sketch for type 2 solar PV monitoring where CT's monitor consumption and grid import/export using an AC-AC adapter to detect current flow direction 
-//    -change line 69-70, 160-164 - see comments in on specific lines. See Solar PV documentation for explination 
+//    -change line 220-221- see comments in on specific lines. See Solar PV documentation for explination 
 
 // GLCD library by Jean-Claude Wippler: JeeLabs.org
 // 2010-05-28 <jcw@equi4.com> http://opensource.org/licenses/mit-license.php
@@ -57,7 +58,7 @@ const int emonBase_nodeID = 15;
 //---------------------------------------------------
 // Data structures for transfering data between units
 //---------------------------------------------------
-typedef struct { int power1, power2, power3, Vrms; } PayloadTX;                                                          // neat way of packaging data for RF comms
+typedef struct { int power1, power2, power3, Vrms; } PayloadTX;       // assume that power1 is consuming/grid and power 2 is solar PV generation 
 PayloadTX emontx; 
 
 typedef struct { int temperature; } PayloadGLCD;
@@ -217,8 +218,8 @@ void power_calculations()
   gen = emontx.power2;  if (gen<100) gen=0;	// remove noise offset 
   consuming = emontx.power1; 		        // for type 1 solar PV monitoring
   grid = consuming - gen;		        // for type 1 solar PV monitoring
-  //grid=emontx.grid; 		         	// for type 2 solar PV monitoring                     
-  // consuming=gen + emontx.grid; 	        // for type 2 solar PV monitoring - grid should be positive when importing and negastive when exporting. Flip round CT cable clap orientation if not
+  //grid=emontx.power1; 		         	// for type 2 solar PV monitoring                     
+  // consuming=gen + emontx.power1; 	        // for type 2 solar PV monitoring - grid should be positive when importing and negastive when exporting. Flip round CT cable clap orientation if not
          
   if (gen > consuming) {
     importing=0; 			        //set importing flag 
