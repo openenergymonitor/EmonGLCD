@@ -1,5 +1,5 @@
 //GLCD fonts - part of GLCD lib
-#include "utility/font_helvB14.h" 	//big numberical digits 
+#include "utility/font_helvB14.h"   //big numberical digits 
 #include "utility/font_clR6x8.h" 	//title
 #include "utility/font_clR4x6.h" 	//kwh
 
@@ -19,8 +19,8 @@ void draw_main_screen()
   glcd.drawString_P(69,0,PSTR("solar PV"));
   glcd.drawString_P(85,33,PSTR("room"));
    
-  if (importing==1) glcd.drawString_P(2,36,PSTR("importing")); else glcd.drawString_P(2,36,PSTR("exporting"));
-  
+//  if (importing==1) glcd.drawString_P(2,36,PSTR("importing")); else glcd.drawString_P(2,36,PSTR("exporting")); 
+  if (importing==1) glcd.drawString_P(2,34,PSTR("importing")); else glcd.drawString_P(2,34,PSTR("exporting")); // - RW - Moved up to match Room on other side
   glcd.setFont(font_helvB14);  		//big bold font
                  
   cval = cval + (consuming - cval)*0.50;
@@ -36,7 +36,8 @@ void draw_main_screen()
   cval3 = cval3 + (grid - cval3)*0.5;
   itoa((int)cval3,str,10);
   strcat(str,"w");   
-  glcd.drawString(3,45,str);    		//importing / exporting
+//  glcd.drawString(3,45,str);    		//importing / exporting
+  glcd.drawString(3,42,str);    		//importing / exporting - RW - Moved up to match Temp on other side
                
   dtostrf(temp,0,1,str); 
   strcat(str,"C");
@@ -61,7 +62,23 @@ void draw_main_screen()
   glcd.drawString_P(97,58,PSTR("max"));
   glcd.drawString(111,58,str);
 
-  if ((millis()-last_emontx)>10000) glcd.drawString_P(32,58,PSTR("RF fail"));
+                                                         // RW - NEW - 
+                                                         // Added time under import / export as there is now room after moving these feilds And we dont have buttons working.
+  DateTime now = RTC.now();
+  glcd.drawString_P(5,58,PSTR("Time:"));
+  char str2[5];
+  itoa((int)now.hour(),str,10);
+  strcat(str,":");   
+  itoa((int)now.minute(),str2,10);
+  strcat(str,str2); 
+  glcd.drawString(28,58,str); 
+  
+  int LDR=analogRead(LDRpin);                             // RW - See if we can use some data from the LDR
+  itoa((int)LDR,str,10);
+  glcd.drawString(49,58,str); 
+
+//  if ((millis()-last_emontx)>10000) glcd.drawString_P(32,58,PSTR("RF fail"));
+  if ((millis()-last_emontx)>10000) glcd.drawString_P(01,58,PSTR("--- RF fail ---")); // RW - Not sure how to blank time to display error
 
   glcd.refresh();
                     
@@ -98,12 +115,12 @@ void backlight_control()
   DateTime now = RTC.now();
   int hour = now.hour();                  //get hour digit in 24hr from software RTC
    
-  if ((hour > 23) ||  (hour < 6)) {
+  if ((hour > 22) ||  (hour < 6)) {       // RW - Changed from 23 and 7 as we go to be early ad get up early.
     night=1; 
     glcd.backLight(0);
   } else {
     night=0; 
-    glcd.backLight(200); 
+    glcd.backLight(150);                  // RW - Changed from 200 to 150.
   }
 }
 
@@ -114,11 +131,13 @@ void led_control()
 {
   if ((gen>0) && (night==0)) {
     if (gen > consuming) {  //show green LED when gen>consumption   
-      digitalWrite(greenLED, HIGH);    
-      digitalWrite(redLED, LOW); 
+      analogWrite(greenLED, 200);    
+      analogWrite(redLED, 0); 
     } else { //red if consumption>gen
-      digitalWrite(redLED, HIGH);   
-      digitalWrite(greenLED, LOW);    
+//      digitalWrite(redLED, HIGH);   
+//      digitalWrite(greenLED, LOW);  
+      analogWrite(redLED, 200);   
+      analogWrite(greenLED, 0);    
     }
   } else{ //Led's off at night and when solar PV is not generating
     digitalWrite(redLED, LOW);
