@@ -11,9 +11,8 @@
 // Temperature recorded on the emonglcd is also sent to the NanodeRF for online graphing
 
 // this sketch is currently setup for type 1 solar PV monitoring where CT's monitor generation and consumption separately
-// The sketch assumes emonx.power1 is consuming/grid power and emontx.power2 is solarPV generation
 // to use this sketch for type 2 solar PV monitoring where CT's monitor consumption and grid import/export using an AC-AC adapter to detect current flow direction 
-//    -change line 220-221- see comments in on specific lines. See Solar PV documentation for explination 
+//    -change line 69-70, 160-164 - see comments in on specific lines. See Solar PV documentation for explination 
 
 // GLCD library by Jean-Claude Wippler: JeeLabs.org
 // 2010-05-28 <jcw@equi4.com> http://opensource.org/licenses/mit-license.php
@@ -24,13 +23,13 @@
 // http://openenergymonitor.org/emon/license
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
-#define DEBUG
+#define DEBUG TRUE                  // Set debug to TRUE to output to serial. Remove TRUE to disable.
 
-#include <OneWire.h>		    // http://www.pjrc.com/teensy/td_libs_OneWire.html
+#include <OneWire.h> 	              // http://www.pjrc.com/teensy/td_libs_OneWire.html
 #include <DallasTemperature.h>      // http://download.milesburton.com/Arduino/MaximTemperature/ (3.7.2 Beta needed for Arduino 1.0)
 
 //JeeLab libraires		       http://github.com/jcw
-#include <JeeLib.h>		    // ports and RFM12 - used for RFM12B wireless
+#include <JeeLib.h>		               // ports and RFM12 - used for RFM12B wireless
 #include <RTClib.h>                 // Real time clock (RTC) - used for software RTC to reset kWh counters at midnight
 #include <Wire.h>                   // Part of Arduino libraries - needed for RTClib
 
@@ -42,8 +41,8 @@ GLCD_ST7565 glcd;
 #define ONE_WIRE_BUS 5              // temperature sensor connection - hard wired 
 const int greenLED=6;               // Green tri-color LED - dig 8 for emonGLCD V1.2
 const int redLED=9;                 // Red tri-color LED
-const int switchpin=15;		    // digital pin of onboard pushswitch 
-const int LDRpin=4;    		    // analog pin of onboard lightsensor 
+const int switchpin=15;		           // digital pin of onboard pushswitch 
+const int LDRpin=4;    		           // analog pin of onboard lightsensor 
 
 //--------------------------------------------------------------------------------------------
 // RFM12B Setup
@@ -58,7 +57,7 @@ const int emonBase_nodeID = 15;
 //---------------------------------------------------
 // Data structures for transfering data between units
 //---------------------------------------------------
-typedef struct { int power1, power2, power3, Vrms; } PayloadTX;       // assume that power1 is consuming/grid and power 2 is solar PV generation 
+typedef struct { int power1, power2, power3, Vrms; } PayloadTX;                                                          // neat way of packaging data for RF comms
 PayloadTX emontx; 
 
 typedef struct { int temperature; } PayloadGLCD;
@@ -73,7 +72,7 @@ PayloadBase emonbase;
 //--------------------------------------------------------------------------------------------
 int importing, night;                                  //flag to indicate import/export
 double consuming, gen, grid, wh_gen, wh_consuming;     //integer variables to store ammout of power currenty being consumed grid (in/out) +gen
-unsigned long whtime;                    	       //used to calculate energy used per day (kWh/d)
+unsigned long whtime;                    	             //used to calculate energy used per day (kWh/d)
 
 //--------------------------------------------------------------------------------------------
 // DS18B20 temperature setup - onboard sensor 
@@ -101,8 +100,8 @@ unsigned long fast_update;                   // Used to count time for fast 100m
 void setup () {
     rf12_initialize(MYNODE, freq,group);
     
-    glcd.begin(0x18);    //begin glcd library and set contrast 0x20 is max, 0x18 seems to look best on emonGLCD
-    glcd.backLight(200); //max 255
+    glcd.begin(0x19);    //begin glcd library and set contrast 0x20 is max, 0x18 seems to look best on emonGLCD
+    glcd.backLight(150); //max 255
    
     #ifdef DEBUG 
       Serial.begin(9600);
@@ -117,7 +116,7 @@ void setup () {
     temp = (sensors.getTempCByIndex(0));     // get inital temperture reading
     mintemp = temp; maxtemp = temp;          // reset min and max
     
-    RTC.begin(DateTime("Dec  8 2011" , "12:00:00")); //start up software RTC - this time will be updated to correct tme from the interent via the emonBase
+    RTC.begin(DateTime("Jan  1 2012" , "12:00:00")); //start up software RTC - this time will be updated to correct tme from the interent via the emonBase
 }
 //--------------------------------------------------------------------------------------------
 
@@ -131,7 +130,7 @@ void loop () {
     // 1. On RF recieve
     //--------------------------------------------------------------------------------------------  
     if (rf12_recvDone()){
-      if (rf12_crc == 0 && (rf12_hdr & RF12_HDR_CTL) == 0)  // and no rf errors
+      if (rf12_crc == 0 && (rf12_hdr & RF12_HDR_CTL) == 0)   // and no rf errors
       {
         int node_id = (rf12_hdr & 0x1F);
         
@@ -147,7 +146,7 @@ void loop () {
           power_calculations();                   // do the power calculations
         }
         
-        if (node_id == emonBase_nodeID)                        // ==== EMONBASE node ID ====
+        if (node_id == emonBase_nodeID)                      // ==== EMONBASE node ID ====
         {
           emonbase = *(PayloadBase*) rf12_data;   // get emonbase payload data
           #ifdef DEBUG 
@@ -184,7 +183,7 @@ void loop () {
        
        // Control led's
        led_control();
-       //backlight_control(); - issue when emonGLCD does not receive correct time from base station display switches off - disable auto switch off at night as a precution 
+       backlight_control();                   //- issue when emonGLCD does not receive correct time from base station display switches off - disable auto switch off at night as a precution 
        
        // Get temperatue from onboard sensor
        sensors.requestTemperatures();
@@ -213,16 +212,18 @@ void power_calculations()
   DateTime now = RTC.now();
   int last_hour = hour;
   hour = now.hour();
-  if (last_hour == 23 && hour == 00) { wh_gen = 0; wh_consuming = 0; }
+//  if (last_hour == 23 && hour == 00) { wh_gen = 0; wh_consuming = 0; } this does not work.. Removing  1 x 0 Still not working not sure if 24Hr clock
+  if (last_hour == 23 && hour == 0) { wh_gen = 0; wh_consuming = 0; }
   
-  gen = emontx.power2;  if (gen<100) gen=0;	// remove noise offset 
-  consuming = emontx.power1; 		        // for type 1 solar PV monitoring
-  grid = consuming - gen;		        // for type 1 solar PV monitoring
-  //grid=emontx.power1; 		         	// for type 2 solar PV monitoring                     
-  // consuming=gen + emontx.power1; 	        // for type 2 solar PV monitoring - grid should be positive when importing and negastive when exporting. Flip round CT cable clap orientation if not
+  gen = emontx.power2;  if (gen<10) gen=0;	 // remove noise offset            - RW - Changed Noise off set from 100 to 10 as it seems stable to me 
+  //consuming = emontx.power1; 		           // for type 1 solar PV monitoring
+  //grid = consuming - gen;		               // for type 1 solar PV monitoring
+  grid = emontx.power1; 		                 	// for type 2 solar PV monitoring                     
+  consuming = gen + emontx.power1; 	        // for type 2 solar PV monitoring - grid should be positive when importing and negastive when exporting. Flip round CT cable clap orientation if not
+  
          
   if (gen > consuming) {
-    importing=0; 			        //set importing flag 
+    importing=0; 			         //set importing flag 
     grid= grid*-1;			        //set grid to be positive - the text 'importing' will change to 'exporting' instead. 
   } else importing=1;
             
