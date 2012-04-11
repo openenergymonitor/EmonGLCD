@@ -42,9 +42,10 @@ GLCD_ST7565 glcd;
 #define ONE_WIRE_BUS 5              // temperature sensor connection - hard wired 
 const int greenLED=6;               // Green tri-color LED - dig 8 for emonGLCD V1.2
 const int redLED=9;                 // Red tri-color LED
-const int switchpin=15;		    // digital pin of onboard pushswitch 
+const int enterswitchpin=15;		    // digital pin of onboard pushswitch 
 const int LDRpin=4;    		    // analog pin of onboard lightsensor 
-
+const int upswitchpin=16;           // digital pin of up switch - low when pressed
+const int downswitchpin=19;         // digital pin of down switch - low when pressed
 //--------------------------------------------------------------------------------------------
 // RFM12B Setup
 //--------------------------------------------------------------------------------------------
@@ -109,8 +110,9 @@ void setup () {
       print_glcd_setup();
     #endif
     
-    pinMode(greenLED, OUTPUT); 
-    pinMode(redLED, OUTPUT);  
+    pinMode(greenLED, OUTPUT); pinMode(redLED, OUTPUT);
+    pinMode(enterswitchpin, INPUT); pinMode(upswitchpin, INPUT); pinMode(downswitchpin, INPUT); 
+    digitalWrite(enterswitchpin, HIGH); digitalWrite(upswitchpin, HIGH); digitalWrite(downswitchpin, HIGH); //enable Atmega328 10K internal pullup resistors  
   
     sensors.begin();                         // start up the DS18B20 temp sensor onboard  
     sensors.requestTemperatures();
@@ -191,7 +193,9 @@ void loop () {
        temp = (sensors.getTempCByIndex(0));
        if (temp > maxtemp) maxtemp = temp;
        if (temp < mintemp) mintemp = temp;
-   }
+       
+       
+ }
    
     //--------------------------------------------------------------------
     // Update the display every 200ms
@@ -200,8 +204,17 @@ void loop () {
     {
       fast_update = millis();
       draw_main_screen();
-    }
     
+    }
+  
+  //Read switches 
+       int S1=digitalRead(enterswitchpin); //low when pressed
+       int S2=digitalRead(upswitchpin);    //low when pressed
+       int S3=digitalRead(downswitchpin);  //low when pressed
+       
+       //if (S1==0) draw_page_two();         //if enter switch (top) is pressed display 2nd page
+
+   
 } //end loop
 //--------------------------------------------------------------------------------------------
 

@@ -1,8 +1,6 @@
 //------------------------------------------------------------------------------------------------------------------------------------------------
 // emonGLCD Test - tests LED's, temperature and light sensors 
 // emonGLCD documentation http://openEnergyMonitor.org/emon/emonglcd
-// push switches don't work on emonGLCD V1.3 
-
 
 // GLCD library by Jean-Claude Wippler: JeeLabs.org
 // 2010-05-28 <jcw@equi4.com> http://opensource.org/licenses/mit-license.php
@@ -28,23 +26,21 @@ GLCD_ST7565 glcd;
 
 #define ONE_WIRE_BUS 5              // on board temperature sensor connection 
 const int redLED=9;               // Green tri-color LED
-const int greenLED=6;                 // Red tri-color LED - dig9 on old emonGLCD V1.2
-const int LDRpin=4;    		    // ADC pin of onboard lightsensor - ADC 0 on old emonGLCD V1.2
+const int greenLED=6;                // Red tri-color LED - dig9 on old emonGLCD V1.2
+const int LDRpin=A4;                // ADC pin of onboard lightsensor - ADC 0 on old emonGLCD V1.2
+
+//const int enterswitchpin=A1;        // ADC pin of enter switch
+//const int upswitchpin=A2;           // ADC pin of up switch
+//const int downswitchpin=A5;         // ADC pin of down switch
+
+const int enterswitchpin=15;        // digital pin of enter switch - low when pressed
+const int upswitchpin=16;           // digital pin of up switch - low when pressed
+const int downswitchpin=19;         // digital pin of down switch - low when pressed
 
 long int last; 
 int RED,GREEN;
 double temp;
 
-//Heartbeat LED
-//elCalvoMike 12-6-2008
-int i = 0;
-int pmw = 255;  //set PWM max - this can differ for other board pins
-int rate = 25;  //this is the beats per minute (60000 ms)
-               //because there are two beats to simulate the 'lub-dub' of the heart,
-               // a 60 beat heart rate is only a value of 30 in the rate variable
-               //the delay is the key to this programs realism - divide the rate into a minute, then weight it and divide by the pmw
-               //you can modify the weight by changing the fractions (i.e .1, .2, .6) but to keep the timing correct, they should total 1
-               //.1+.2+.1+.6 = 1
 
 //--------------------------------------------------------------------------------------------
 // DS18B20 temperature setup - onboard sensor 
@@ -63,6 +59,8 @@ void setup () {
     
     pinMode(greenLED, OUTPUT); 
     pinMode(redLED, OUTPUT); 
+    pinMode(enterswitchpin, INPUT); pinMode(upswitchpin, INPUT); pinMode(downswitchpin, INPUT); 
+    digitalWrite(enterswitchpin, HIGH); digitalWrite(upswitchpin, HIGH); digitalWrite(downswitchpin, HIGH); //enable Atmega328 10K internal pullup resistors 
     
     sensors.begin();                         // start up the DS18B20 temp sensor onboard  
     sensors.requestTemperatures();
@@ -90,47 +88,56 @@ void loop () {
        temp = (sensors.getTempCByIndex(0));
        
        int LDR=analogRead(LDRpin); 
+       int S1=digitalRead(enterswitchpin);
+       int S2=digitalRead(upswitchpin);
+       int S3=digitalRead(downswitchpin);
+       
+
 
   glcd.drawString_P(0,  0, PSTR("emonGLCD tester"));
   glcd.drawString_P(0,  10, PSTR("OpenEnergyMonitor"));
-  glcd.drawString_P(0,  30, PSTR("Temperature: "));
-  glcd.drawString_P(0,  40, PSTR("Light level: "));
+  glcd.drawString_P(0,  25, PSTR("Temperature: "));
+  glcd.drawString_P(0,  35, PSTR("Light level:  "));
+  glcd.drawString_P(0,  55, PSTR("Switches: "));
   
   char str[50];       
   dtostrf(temp,0,1,str); 
   strcat(str,"C");
-  glcd.drawString(74,30,str); 
+  glcd.drawString(74,25,str); 
   
   itoa(LDR,str,10); 
-  glcd.drawString(70,40,str); 
+  glcd.drawString(73,35,str); 
   
    if (millis()>(last+3000)){
-   if (RED==1) Serial.println("Red LED");
-   if (GREEN==1)  Serial.println("Green LED");
+   //if (RED==1) Serial.println("Red LED");
+  // if (GREEN==1)  Serial.println("Green LED");
    RED=!RED;
    GREEN=!GREEN;
    last=millis();
+   
    Serial.print("temp: "); Serial.print(temp); Serial.println(" ");
    Serial.print("Light: "); Serial.print(LDR); Serial.println(" ");
-  
+   Serial.print("Switches (low when pressed) : ");
+   Serial.print(S1); Serial.print(" "); 
+   Serial.print(S2); Serial.print(" ");   
+   Serial.print(S3); Serial.println(" "); 
    
  }
   
   
   if (RED==1){
-  glcd.drawString_P(0,  50, PSTR("Green LED"));
+  glcd.drawString_P(0,  45, PSTR("Green LED"));
   digitalWrite(greenLED,HIGH); digitalWrite(redLED,LOW);
-  
-  
- 
   }
-  
   
   if (GREEN==1){
-  glcd.drawString_P(0,  50, PSTR("RED LED"));
+  glcd.drawString_P(0,  45, PSTR("RED LED"));
  digitalWrite(greenLED,LOW); digitalWrite(redLED,HIGH);
- 
   }
+  
+  if (S1==0) glcd.drawString_P(60,  55, PSTR("Enter"));
+  if (S2==0) glcd.drawString_P(60,  55, PSTR("Up"));
+  if (S3==0) glcd.drawString_P(60,  55, PSTR("Down"));
     
     
     glcd.refresh();
