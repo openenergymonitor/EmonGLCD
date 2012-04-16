@@ -19,7 +19,7 @@ void draw_main_screen()
   glcd.drawString_P(69,0,PSTR("solar PV"));
   glcd.drawString_P(85,33,PSTR("room"));
    
-  if (importing==1) glcd.drawString_P(2,36,PSTR("importing")); else glcd.drawString_P(2,36,PSTR("exporting"));
+  if (importing==1) glcd.drawString_P(2,34,PSTR("importing")); else glcd.drawString_P(2,34,PSTR("exporting"));
   
   glcd.setFont(font_helvB14);  		//big bold font
                  
@@ -36,7 +36,7 @@ void draw_main_screen()
   cval3 = cval3 + (grid - cval3)*0.5;
   itoa((int)cval3,str,10);
   strcat(str,"w");   
-  glcd.drawString(3,45,str);    		//importing / exporting
+  glcd.drawString(3,42,str);    		//importing / exporting
                
   dtostrf(temp,0,1,str); 
   strcat(str,"C");
@@ -60,8 +60,23 @@ void draw_main_screen()
   strcat(str,"C");
   glcd.drawString_P(97,58,PSTR("max"));
   glcd.drawString(111,58,str);
+  
+  
 
-  if ((millis()-last_emontx)>10000) glcd.drawString_P(32,58,PSTR("RF fail"));
+  if (((millis()-last_emontx)<10000) && ((millis()-last_emonbase)<10000)) {
+    
+    DateTime now = RTC.now();
+  glcd.drawString_P(5,58,PSTR("Time:"));
+  char str2[5];
+  itoa((int)now.hour(),str,10);
+  if  (now.minute()<10) strcat(str,":0"); else strcat(str,":"); 
+  itoa((int)now.minute(),str2,10);
+  strcat(str,str2); 
+  glcd.drawString(28,58,str); 
+  }
+  else
+    if ((millis()-last_emontx)>10000) glcd.drawString_P(2,58,PSTR("--Tx RF fail--"));
+      else glcd.drawString_P(1,58,PSTR("-Base RF fail-"));
 
   glcd.refresh();
                     
@@ -79,7 +94,7 @@ void draw_page_two()
   char str[20];
   char str2[5];
   itoa((int)now.hour(),str,10);
-  strcat(str,":");   
+  if  (now.minute()<10) strcat(str,":0"); else strcat(str,":");
   itoa((int)now.minute(),str2,10);
   strcat(str,str2); 
                
@@ -87,6 +102,8 @@ void draw_page_two()
   glcd.drawString(2,10,str);  
 
   glcd.refresh();
+  
+  delay(2000); 
   
 }
 
@@ -114,14 +131,14 @@ void led_control()
 {
   if ((gen>0) && (night==0)) {
     if (gen > consuming) {  //show green LED when gen>consumption   
-      digitalWrite(greenLED, HIGH);    
-      digitalWrite(redLED, LOW); 
+      analogWrite(greenLED, 200);    
+      analogWrite(redLED, 0); 
     } else { //red if consumption>gen
-      digitalWrite(redLED, HIGH);   
-      digitalWrite(greenLED, LOW);    
+      analogWrite(redLED, 200);   
+      analogWrite(greenLED, 0);    
     }
   } else{ //Led's off at night and when solar PV is not generating
-    digitalWrite(redLED, LOW);
-    digitalWrite(greenLED, LOW);
+    analogWrite(redLED, 0);
+    analogWrite(greenLED, 0);
   }
 }

@@ -18,7 +18,9 @@ void draw_main_screen()
   glcd.drawString_P(0,0,PSTR("POWER NOW:"));
   glcd.drawString_P(0,38,PSTR("ENERGY TODAY:"));
 
-  if ((millis()-last_emontx)>10000) glcd.drawString_P(64,0,PSTR("RF fail"));
+  glcd.setFont(font_clR4x6);   		//small font - Kwh
+  if ((millis()-last_emontx)>10000) glcd.drawString_P(64,0,PSTR("--Tx RF fail--"));
+   else if ((millis()-last_emonbase)>10000) glcd.drawString_P(64,0,PSTR("-Base RF fail-"));
    
   glcd.setFont(font_helvB24);  		//big bold font
                  
@@ -85,6 +87,7 @@ void draw_page_two()
   glcd.drawString(2,10,str);  
 
   glcd.refresh();
+  delay(2000);
   
 }
 

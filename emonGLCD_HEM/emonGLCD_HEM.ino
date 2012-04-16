@@ -37,8 +37,10 @@ GLCD_ST7565 glcd;
 #define ONE_WIRE_BUS 5              // temperature sensor connection - hard wired 
 const int greenLED=6;               // Green tri-color LED - 8 on emonGLCD V1.2
 const int redLED=9;                 // Red tri-color LED
-const int switchpin=15;		    // digital pin of onboard pushswitch 
+const int enterswitchpin=15;		    // digital pin of onboard pushswitch 
 const int LDRpin=4;    		    // analog pin of onboard lightsensor 
+const int upswitchpin=16;           // digital pin of up switch - low when pressed
+const int downswitchpin=19;         // digital pin of down switch - low when pressed
 
 //--------------------------------------------------------------------------------------------
 // RFM12B Setup
@@ -85,6 +87,7 @@ int hour;
 //-------------------------------------------------------------------------------------------- 
 int view = 1;                                // Used to control which screen view is shown
 unsigned long last_emontx;                   // Used to count time from last emontx update
+unsigned long last_emonbase;                   // Used to count time from last emonBase update
 unsigned long slow_update;                   // Used to count time for slow 10s events
 unsigned long fast_update;                   // Used to count time for fast 100ms events
   
@@ -104,7 +107,10 @@ void setup () {
     
     pinMode(greenLED, OUTPUT); 
     pinMode(redLED, OUTPUT);  
-  
+    
+    pinMode(enterswitchpin, INPUT); pinMode(upswitchpin, INPUT); pinMode(downswitchpin, INPUT); 
+    digitalWrite(enterswitchpin, HIGH); digitalWrite(upswitchpin, HIGH); digitalWrite(downswitchpin, HIGH); //enable Atmega328 10K internal pullup resistors
+    
     sensors.begin();                         // start up the DS18B20 temp sensor onboard  
     sensors.requestTemperatures();
     temp = (sensors.getTempCByIndex(0));     // get inital temperture reading
@@ -142,6 +148,7 @@ void loop () {
         
         if (node_id == 15)                        // ==== EMONBASE ====
         {
+          last_emonbase = millis();                 // set time of last update to now
           emonbase = *(PayloadBase*) rf12_data;   // get emonbase payload data
           #ifdef DEBUG 
             print_emonbase_payload();             // print data to serial
@@ -179,8 +186,11 @@ void loop () {
 
     //--------------------------------------------------------------------
     // Control toggling of screen pages
-    //--------------------------------------------------------------------    
-    //if (digitalRead(switchpin) == TRUE) view = 2; else view = 1; - switchs don't work on emonGLCD V1.3
+    //-------------------------------------------------------------------- 
+     int S1=digitalRead(enterswitchpin); //low when pressed
+       int S2=digitalRead(upswitchpin);    //low when pressed
+       int S3=digitalRead(downswitchpin);  //low when pressed   
+    if (S1==0) draw_page_two();
 
     //--------------------------------------------------------------------
     // Update the display every 200ms
@@ -188,8 +198,8 @@ void loop () {
     if ((millis()-fast_update)>200)
     {
       fast_update = millis();
-      if (view == 1) draw_main_screen();
-      if (view == 2) draw_page_two();
+      draw_main_screen();
+      
     }
     
 } //end loop

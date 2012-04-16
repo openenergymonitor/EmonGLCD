@@ -93,6 +93,7 @@ int hour;
 // Flow control
 //-------------------------------------------------------------------------------------------- 
 unsigned long last_emontx;                   // Used to count time from last emontx update
+unsigned long last_emonbase;                   // Used to count time from last emontx update
 unsigned long slow_update;                   // Used to count time for slow 10s events
 unsigned long fast_update;                   // Used to count time for fast 100ms events
   
@@ -151,6 +152,7 @@ void loop () {
         
         if (node_id == emonBase_nodeID)                        // ==== EMONBASE node ID ====
         {
+          last_emonbase = millis(); 
           emonbase = *(PayloadBase*) rf12_data;   // get emonbase payload data
           #ifdef DEBUG 
             print_emonbase_payload();             // print data to serial
@@ -212,7 +214,7 @@ void loop () {
        int S2=digitalRead(upswitchpin);    //low when pressed
        int S3=digitalRead(downswitchpin);  //low when pressed
        
-       //if (S1==0) draw_page_two();         //if enter switch (top) is pressed display 2nd page
+       if (S1==0) draw_page_two();         //if enter switch (top) is pressed display 2nd page
 
    
 } //end loop
@@ -228,9 +230,10 @@ void power_calculations()
   hour = now.hour();
   if (last_hour == 23 && hour == 00) { wh_gen = 0; wh_consuming = 0; }
   
-  gen = emontx.power2;  if (gen<100) gen=0;	// remove noise offset 
+  //gen = emontx.power2;  if (gen<100) gen=0;	// remove noise offset 
   consuming = emontx.power1; 		        // for type 1 solar PV monitoring
   grid = consuming - gen;		        // for type 1 solar PV monitoring
+  
   //grid=emontx.power1; 		         	// for type 2 solar PV monitoring                     
   // consuming=gen + emontx.power1; 	        // for type 2 solar PV monitoring - grid should be positive when importing and negastive when exporting. Flip round CT cable clap orientation if not
          
