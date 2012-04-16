@@ -79,7 +79,7 @@ void draw_page_two()
   char str[20];
   char str2[5];
   itoa((int)now.hour(),str,10);
-  strcat(str,":");   
+  if  (now.minute()<10) strcat(str,":0"); else strcat(str,":");  
   itoa((int)now.minute(),str2,10);
   strcat(str,str2); 
                
