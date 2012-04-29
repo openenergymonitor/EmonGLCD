@@ -19,8 +19,8 @@ void draw_main_screen()
   glcd.drawString_P(0,38,PSTR("ENERGY TODAY:"));
 
   glcd.setFont(font_clR4x6);   		//small font - Kwh
-  if ((millis()-last_emontx)>10000) glcd.drawString_P(64,0,PSTR("--Tx RF fail--"));
-   else if ((millis()-last_emonbase)>10000) glcd.drawString_P(64,0,PSTR("-Base RF fail-"));
+  if ((millis()-last_emontx)>20000) glcd.drawString_P(64,0,PSTR("--emonTx fail--"));
+   else if ((millis()-last_emonbase)>30000) glcd.drawString_P(64,0,PSTR("-emonBase fail-"));
    
   glcd.setFont(font_helvB24);  		//big bold font
                  

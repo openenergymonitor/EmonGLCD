@@ -63,7 +63,7 @@ void draw_main_screen()
   
   
 
-  if (((millis()-last_emontx)<10000) && ((millis()-last_emonbase)<10000)) {
+  if (((millis()-last_emontx)<20000) && ((millis()-last_emonbase)<20000)) {
     
     DateTime now = RTC.now();
   glcd.drawString_P(5,58,PSTR("Time:"));
@@ -75,8 +75,8 @@ void draw_main_screen()
   glcd.drawString(28,58,str); 
   }
   else
-    if ((millis()-last_emontx)>10000) glcd.drawString_P(2,58,PSTR("--Tx RF fail--"));
-      else glcd.drawString_P(1,58,PSTR("-Base RF fail-"));
+    if ((millis()-last_emontx)>20000) glcd.drawString_P(2,58,PSTR("--emonTx fail--"));
+      else glcd.drawString_P(1,58,PSTR("-emonBase fail-"));
 
   glcd.refresh();
                     
