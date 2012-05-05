@@ -4,9 +4,10 @@
 // emonGLCD documentation http://openEnergyMonitor.org/emon/emonglcd
 // solar PV monitor build documentation: http://openenergymonitor.org/emon/applications/solarpv
 
-// For use with emonTx setup with 2CT one monitoring consumption and the other monitoring gen
-// RTC to reset Kwh counters at midnight is implemented is software. 
-// Correct time is updated via NanodeRF which gets time from internet
+// For use with emonTx setup with 2CT with CT 1 monitoring consumption/grid and CT 2 monitoring PV generation .
+// The CT's should be clipped on with the orientation so grid reading is postive when importing and negative when exporting. Generation reading should always be positive. 
+
+// Correct time is updated via NanodeRF which gets time from internet, this is used to reset Kwh/d counters at midnight. 
 
 // Temperature recorded on the emonglcd is also sent to the NanodeRF for online graphing
 
@@ -25,6 +26,12 @@
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 #define DEBUG
+
+//--------------------------------------------------------------------------------------------
+// Solar PV setup - enter type 1 or type 2 depending on setup. See:http://openenergymonitor.org/emon/applications/solarpv
+//--------------------------------------------------------------------------------------------
+const int SolarPV_type=1;
+//--------------------------------------------------------------------------------------------
 
 #include <OneWire.h>		    // http://www.pjrc.com/teensy/td_libs_OneWire.html
 #include <DallasTemperature.h>      // http://download.milesburton.com/Arduino/MaximTemperature/ (3.7.2 Beta needed for Arduino 1.0)
@@ -46,9 +53,8 @@ const int enterswitchpin=15;		    // digital pin of onboard pushswitch
 const int LDRpin=4;    		    // analog pin of onboard lightsensor 
 const int upswitchpin=16;           // digital pin of up switch - low when pressed
 const int downswitchpin=19;         // digital pin of down switch - low when pressed
-//--------------------------------------------------------------------------------------------
-// RFM12B Setup
-//--------------------------------------------------------------------------------------------
+
+
 #define MYNODE 20            //Should be unique on network, node ID 30 reserved for base station
 #define freq RF12_433MHZ     //frequency - match to same frequency as RFM12B module (change to 868Mhz or 915Mhz if appropriate)
 #define group 210            //network group, must be same as emonTx and emonBase
@@ -230,12 +236,19 @@ void power_calculations()
   hour = now.hour();
   if (last_hour == 23 && hour == 00) { wh_gen = 0; wh_consuming = 0; }
   
-  //gen = emontx.power2;  if (gen<100) gen=0;	// remove noise offset 
-  consuming = emontx.power1; 		        // for type 1 solar PV monitoring
-  grid = consuming - gen;		        // for type 1 solar PV monitoring
+ gen = emontx.power2;  if (gen<100) gen=0;	// remove noise offset 
   
-  //grid=emontx.power1; 		         	// for type 2 solar PV monitoring                     
-  // consuming=gen + emontx.power1; 	        // for type 2 solar PV monitoring - grid should be positive when importing and negastive when exporting. Flip round CT cable clap orientation if not
+  if (SolarPV_type==1)
+    {
+      consuming = emontx.power1; 		 // for type 1 solar PV monitoring
+      grid = consuming - gen;		        // for type 1 solar PV monitoring
+    }
+  
+  if (SolarPV_type==2)
+  {
+    grid=emontx.power1; 		         // for type 2 solar PV monitoring                     
+    consuming=gen + emontx.power1; 	        // for type 2 solar PV monitoring - grid should be positive when importing and negastive when exporting. Flip round CT cable clap orientation if not
+  }
          
   if (gen > consuming) {
     importing=0; 			        //set importing flag 
