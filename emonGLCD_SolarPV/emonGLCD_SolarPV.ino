@@ -236,7 +236,7 @@ void power_calculations()
   hour = now.hour();
   if (last_hour == 23 && hour == 00) { wh_gen = 0; wh_consuming = 0; }
   
- gen = emontx.power2;  if (gen<100) gen=0;	// remove noise offset 
+ gen = emontx.power2;  if (gen<50) gen=0;	// set minimum generation threshold before emonGLCD displays generation 
   
   if (SolarPV_type==1)
     {
