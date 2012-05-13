@@ -144,11 +144,13 @@ void led_control()
    
     if ((gen>0) && (night==0)) {
       if (cval2 > cval) {                //show green LED when gen>consumption cval are the smooth curve values  
-        analogWrite(greenLED, PWRleds);    
-        analogWrite(redLED, 0); 
+	analogWrite(redLED, 0);         
+	analogWrite(greenLED, PWRleds);    
+        
       } else {                              //red if consumption>gen
-        analogWrite(redLED, PWRleds);   
-        analogWrite(greenLED, 0);    
+        analogWrite(greenLED, 0); 
+	analogWrite(redLED, PWRleds);   
+           
       }
     } else{                                 //Led's off at night and when solar PV is not generating
       analogWrite(redLED, 0);
