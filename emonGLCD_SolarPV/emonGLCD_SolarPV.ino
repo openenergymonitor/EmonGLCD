@@ -56,7 +56,7 @@ const int downswitchpin=19;         // digital pin of down switch - low when pre
 
 
 #define MYNODE 20            //Should be unique on network, node ID 30 reserved for base station
-#define freq RF12_433MHZ     //frequency - match to same frequency as RFM12B module (change to 868Mhz or 915Mhz if appropriate)
+#define freq RF12_868MHZ     //frequency - match to same frequency as RFM12B module (change to 868Mhz or 915Mhz if appropriate)
 #define group 210            //network group, must be same as emonTx and emonBase
 
 const int emonTx_nodeID = 10;
@@ -163,6 +163,7 @@ void loop () {
           #ifdef DEBUG 
             print_emonbase_payload();             // print data to serial
           #endif  
+          
           RTC.adjust(DateTime(2012, 1, 1, emonbase.hour, emonbase.mins, emonbase.sec));  // adjust emonglcd software real time clock
           
           delay(100);                             // delay to make sure printing and clock setting finished

@@ -98,15 +98,15 @@ void backlight_control()
    int LDRbacklight = map(LDR, 0, 1023, 50, 250);    // Map the data from the LDR from 0-1023 (Max seen 1000) to var GLCDbrightness min/max
    LDRbacklight = constrain(LDRbacklight, 0, 255);   // Constrain the value to make sure its a PWM value 0-255
 
-                                                     // LED's settings LED are brighter than the back light and can be dimmer
+                                                     
 
   //--------------------------------------------------------------------
   // Turn off backlight and indicator LED's between 11pm and 6am
   //-------------------------------------------------------------------- 
   DateTime now = RTC.now();
-  int hour = now.hour();                  //get hour digit in 24hr from software RTC
+  if (now.hour()>0) int hour = now.hour();                  //get hour digit in 24hr from software RTC
  
-  if ((hour > 22) ||  (hour < 5)) {       // turn off backlight between 11pm and 6am
+  if ((hour > 22) ||  (hour < 5) && ((millis()-last_emonbase)<20000)){       // turn off backlight between 11pm and 6am
     night=1; 
     glcd.backLight(0);
   } else {
