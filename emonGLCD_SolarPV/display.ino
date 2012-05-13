@@ -139,7 +139,7 @@ void led_control()
 //--------------------------------------------------------------------
 //Change color of LED on top of emonGLCD, red if consumption exceeds gen or green if gen is greater than consumption 
 //-------------------------------------------------------------------- 
-   int PWRleds= map(cval3, 0, 5000, 0, 255);     // Map importing value from 0-5Kw (LED brightness - cval3 is the smoothed grid value - see display above 
+   int PWRleds= map(cval3, 0, 4000, 0, 255);     // Map importing value from 0-4Kw (LED brightness - cval3 is the smoothed grid value - see display above 
    PWRleds = constrain(PWRleds, 0, 255);             // Constrain the value to make sure its a PWM value 0-255
    
     if ((gen>0) && (night==0)) {
