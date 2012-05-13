@@ -109,18 +109,25 @@ void draw_page_two()
 
 void backlight_control()
 {
+   int LDR = analogRead(LDRpin);                    // Read the LDR Value so we can work out the light level in the room.
+                                                      // GLCD settings
+   int LDRbacklight = map(LDR, 0, 1023, 50, 250);    // Map the data from the LDR from 0-1023 (Max seen 1000) to var GLCDbrightness min/max
+   LDRbacklight = constrain(LDRbacklight, 0, 255);   // Constrain the value to make sure its a PWM value 0-255
+
+                                                     // LED's settings LED are brighter than the back light and can be dimmer
+
   //--------------------------------------------------------------------
-  // Turn off backlight and indicator LED's between 12pm and 6am
+  // Turn off backlight and indicator LED's between 11pm and 6am
   //-------------------------------------------------------------------- 
   DateTime now = RTC.now();
   int hour = now.hour();                  //get hour digit in 24hr from software RTC
-   
-  if ((hour > 23) ||  (hour < 6)) {
+ 
+  if ((hour > 22) ||  (hour < 5)) {       // turn off backlight between 11pm and 6am
     night=1; 
     glcd.backLight(0);
   } else {
     night=0; 
-    glcd.backLight(200); 
+    glcd.backLight(LDRbacklight);  
   }
 }
 
@@ -129,16 +136,22 @@ void backlight_control()
 //-------------------------------------------------------------------- 
 void led_control()
 {
-  if ((gen>0) && (night==0)) {
-    if (gen > consuming) {  //show green LED when gen>consumption   
-      analogWrite(greenLED, 200);    
-      analogWrite(redLED, 0); 
-    } else { //red if consumption>gen
-      analogWrite(redLED, 200);   
-      analogWrite(greenLED, 0);    
+//--------------------------------------------------------------------
+//Change color of LED on top of emonGLCD, red if consumption exceeds gen or green if gen is greater than consumption 
+//-------------------------------------------------------------------- 
+   int PWRleds= map(cval3, 0, 5000, 0, 255);     // Map importing value from 0-5Kw (LED brightness - cval3 is the smoothed grid value - see display above 
+   PWRleds = constrain(PWRleds, 0, 255);             // Constrain the value to make sure its a PWM value 0-255
+   
+    if ((gen>0) && (night==0)) {
+      if (cval2 > cval) {                //show green LED when gen>consumption cval are the smooth curve values  
+        analogWrite(greenLED, PWRleds);    
+        analogWrite(redLED, 0); 
+      } else {                              //red if consumption>gen
+        analogWrite(redLED, PWRleds);   
+        analogWrite(greenLED, 0);    
+      }
+    } else{                                 //Led's off at night and when solar PV is not generating
+      analogWrite(redLED, 0);
+      analogWrite(greenLED, 0);
     }
-  } else{ //Led's off at night and when solar PV is not generating
-    analogWrite(redLED, 0);
-    analogWrite(greenLED, 0);
-  }
 }

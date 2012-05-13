@@ -192,9 +192,8 @@ void loop () {
     {
        slow_update = millis();
        
-       // Control led's
-       led_control();
-       //backlight_control(); - issue when emonGLCD does not receive correct time from base station display switches off - disable auto switch off at night as a precution 
+      
+       backlight_control(); // issue when emonGLCD does not receive correct time from base station display switches off - disable auto switch off at night as a precution 
        
        // Get temperatue from onboard sensor
        sensors.requestTemperatures();
@@ -212,6 +211,8 @@ void loop () {
     {
       fast_update = millis();
       draw_main_screen();
+       // Control led's
+       led_control();
     
     }
   
