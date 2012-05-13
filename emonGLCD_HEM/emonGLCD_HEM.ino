@@ -216,7 +216,7 @@ void power_calculations()
   
   if (last_hour == 23 && hour == 00) { wh_consuming = 0; }
   
-  consuming = emontx.power2; 		        // for type 1 solar PV monitoring
+  consuming = emontx.power1; 		        // for CT connected into port 1 
             
   //--------------------------------------------------
   // kWh calculation
