@@ -113,8 +113,7 @@ void backlight_control()
                                                       // GLCD settings
    int LDRbacklight = map(LDR, 0, 1023, 50, 250);    // Map the data from the LDR from 0-1023 (Max seen 1000) to var GLCDbrightness min/max
    LDRbacklight = constrain(LDRbacklight, 0, 255);   // Constrain the value to make sure its a PWM value 0-255
-
-                                                     // LED's settings LED are brighter than the back light and can be dimmer
+                                                 
 
   //--------------------------------------------------------------------
   // Turn off backlight and indicator LED's between 11pm and 6am
