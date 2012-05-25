@@ -71,7 +71,7 @@ PayloadTX emontx;
 typedef struct { int temperature; } PayloadGLCD;
 PayloadGLCD emonglcd;
 
-typedef struct { int hour, mins, sec; } PayloadBase;
+typedef struct { int hour, mins; } PayloadBase;
 PayloadBase emonbase;
 //---------------------------------------------------
 
@@ -166,7 +166,7 @@ void loop () {
             print_emonbase_payload();             // print data to serial
           #endif  
           
-          RTC.adjust(DateTime(2012, 1, 1, emonbase.hour, emonbase.mins, emonbase.sec));  // adjust emonglcd software real time clock
+          RTC.adjust(DateTime(2012, 1, 1, emonbase.hour, emonbase.mins, 0));  // adjust emonglcd software real time clock
           
           delay(100);                             // delay to make sure printing and clock setting finished
            
