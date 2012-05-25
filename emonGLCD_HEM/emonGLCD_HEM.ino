@@ -81,6 +81,7 @@ double temp,maxtemp,mintemp;
 //-------------------------------------------------------------------------------------------- 
 RTC_Millis RTC;
 int hour;
+const int time_difference=0;                        //set number of hours forward (positive) for backwards (negative) to make the emonGLCD time match local time
   
 //-------------------------------------------------------------------------------------------- 
 // Flow control
@@ -154,7 +155,7 @@ void loop () {
           #ifdef DEBUG 
             print_emonbase_payload();             // print data to serial
           #endif  
-          RTC.adjust(DateTime(2012, 1, 1, emonbase.hour, emonbase.mins, 0));  // adjust emonglcd software real time clock
+          RTC.adjust(DateTime(2012, 1, 1, (emonbase.hour+time_difference), emonbase.mins, 0));  // adjust emonglcd software real time clock
           
           delay(100);                             // delay to make sure printing and clock setting finished
            
