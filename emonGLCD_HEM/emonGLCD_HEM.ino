@@ -42,6 +42,8 @@ const int LDRpin=4;    		    // analog pin of onboard lightsensor
 const int upswitchpin=16;           // digital pin of up switch - low when pressed
 const int downswitchpin=19;         // digital pin of down switch - low when pressed
 
+const int maxPower=8000;            //(8kW) Power level at which red LED is brightest - ideally this should really be calculated automatically using a clever algorithum! 
+
 //--------------------------------------------------------------------------------------------
 // RFM12B Setup
 //--------------------------------------------------------------------------------------------
@@ -200,8 +202,8 @@ void loop () {
     if ((millis()-fast_update)>200)
     {
       fast_update = millis();
-      draw_main_screen();
-      
+      draw_main_screen();                 //udapte LCD
+      led_control();                      //adjust brightness of red LED depending on level of consumption 
     }
     
 } //end loop

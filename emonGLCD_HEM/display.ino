@@ -96,9 +96,7 @@ void backlight_control()
   int LDR = analogRead(LDRpin);                    // Read the LDR Value so we can work out the light level in the room.
                                                       // GLCD settings
    int LDRbacklight = map(LDR, 0, 1023, 50, 250);    // Map the data from the LDR from 0-1023 (Max seen 1000) to var GLCDbrightness min/max
-   LDRbacklight = constrain(LDRbacklight, 0, 255);   // Constrain the value to make sure its a PWM value 0-255
-
-                                                     
+   LDRbacklight = constrain(LDRbacklight, 0, 255);   // Constrain the value to make sure its a PWM value 0-255                                                 
 
   //--------------------------------------------------------------------
   // Turn off backlight and indicator LED's between 11pm and 6am
@@ -115,3 +113,24 @@ void backlight_control()
   }
 }
 
+
+//--------------------------------------------------------------------
+//Change color of LED on top of emonGLCD to match consumption 
+//-------------------------------------------------------------------- 
+void led_control()
+{
+//--------------------------------------------------------------------
+//Change color of LED on top of emonGLCD, red if consumption exceeds gen or green if gen is greater than consumption 
+//-------------------------------------------------------------------- 
+   int PWRleds= map(cval, 0, maxPower, 0, 200);      // Map power consumption value (cval3 is the smoothed grid value - see display above) to LED PWM level 
+   PWRleds = constrain(PWRleds, 0, 200);             // Constrain the value to make sure its a PWM value 0-255
+        
+        if (night==0){                       
+        analogWrite(redLED, PWRleds);   
+        analogWrite(greenLED, 0);    
+        }
+    else{                                             //Led's off at night and when solar PV is not generating
+      analogWrite(redLED, 0);
+      analogWrite(greenLED, 0);
+    }
+}
