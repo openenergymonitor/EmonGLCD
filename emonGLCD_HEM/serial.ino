@@ -29,6 +29,4 @@ void print_emonbase_payload()
   Serial.print(emonbase.hour);
   Serial.print(':');
   Serial.print(emonbase.mins);
-  Serial.print(':');
-  Serial.println(emonbase.sec);
 }
