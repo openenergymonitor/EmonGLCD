@@ -177,7 +177,7 @@ void loop () {
           rf12_sendStart(0, &emonglcd, sizeof emonglcd);                      // send emonglcd data
           rf12_sendWait(0);
           #ifdef DEBUG 
-            Serial.println("3 emonglcd sent");                                // print status
+            Serial.println("\n3 emonglcd sent");                                // print status
           #endif                               
         }
       }
