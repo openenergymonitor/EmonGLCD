@@ -30,7 +30,7 @@
 //--------------------------------------------------------------------------------------------
 // Solar PV setup - enter type 1 or type 2 depending on setup. See:http://openenergymonitor.org/emon/applications/solarpv
 //--------------------------------------------------------------------------------------------
-const int SolarPV_type=1;
+const int SolarPV_type=2;
 //--------------------------------------------------------------------------------------------
 
 #include <OneWire.h>		    // http://www.pjrc.com/teensy/td_libs_OneWire.html
@@ -79,7 +79,8 @@ PayloadBase emonbase;
 // Power variables
 //--------------------------------------------------------------------------------------------
 int importing, night;                                  //flag to indicate import/export
-double consuming, gen, grid, wh_gen, wh_consuming;     //integer variables to store ammout of power currenty being consumed grid (in/out) +gen
+double consuming, gen, grid;
+double wh_gen[7], wh_consuming[7];     //integer variables to store ammout of power currenty being consumed grid (in/out) +gen
 unsigned long whtime;                    	       //used to calculate energy used per day (kWh/d)
 
 //--------------------------------------------------------------------------------------------
@@ -94,7 +95,7 @@ double temp,maxtemp,mintemp;
 //-------------------------------------------------------------------------------------------- 
 RTC_Millis RTC;
 int hour;
-const int time_difference=0;                        //set number of hours forward (positive) for backwards (negative) to make the emonGLCD time match local time
+const int time_difference=1;                        //set number of hours forward (positive) for backwards (negative) to make the emonGLCD time match local time
   
 //-------------------------------------------------------------------------------------------- 
 // Flow control
@@ -176,7 +177,7 @@ void loop () {
           rf12_sendStart(0, &emonglcd, sizeof emonglcd);                      // send emonglcd data
           rf12_sendWait(0);
           #ifdef DEBUG 
-            Serial.println("3 emonglcd sent");                                // print status
+            Serial.println("\n3 emonglcd sent");                                // print status
           #endif                               
         }
       }
@@ -226,8 +227,9 @@ void loop () {
        int S3=digitalRead(downswitchpin);  //low when pressed
        
        if (S1==0) draw_page_two();         //if enter switch (top) is pressed display 2nd page
-
-   
+       if (S2==0) draw_history();       //if 2nd switch (middle) is pressed, display 3rd page
+    
+       
 } //end loop
 //--------------------------------------------------------------------------------------------
 
@@ -239,7 +241,22 @@ void power_calculations()
   DateTime now = RTC.now();
   int last_hour = hour;
   hour = now.hour();
-  if (last_hour == 23 && hour == 00) { wh_gen = 0; wh_consuming = 0; }
+  if (last_hour == 23 && hour == 00) 
+{ 
+  int i;
+  for (i=6; i>0; i--)
+  {
+    wh_gen[i]=wh_gen[i-1]; 
+  }
+  wh_gen[0] = 0; 
+  
+  for(i=6; i>0; i--)
+  {
+    wh_consuming[i]=wh_consuming[i-1];
+  }
+  wh_consuming[0] = 0; 
+  
+}
   
  gen = emontx.power2;  if (gen<50) gen=0;	// set minimum generation threshold before emonGLCD displays generation 
   
@@ -266,9 +283,9 @@ void power_calculations()
   unsigned long lwhtime = whtime;
   whtime = millis();
   double whInc = gen * ((whtime-lwhtime)/3600000.0);
-  wh_gen=wh_gen+whInc;
+  wh_gen[0]=wh_gen[0]+whInc;
   whInc = consuming *((whtime-lwhtime)/3600000.0);
-  wh_consuming=wh_consuming+whInc;
+  wh_consuming[0]=wh_consuming[0]+whInc;
   //---------------------------------------------------------------------- 
 }
 
