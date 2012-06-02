@@ -115,7 +115,7 @@ void draw_history()
   char str[50]; 
   
   glcd.setFont(font_clR6x8);
-  glcd.drawString_P(40,0,PSTR("History"));
+  glcd.drawString_P(2,0,PSTR("History"));
   
   glcd.setFont(font_clR4x6);   	
 
@@ -129,72 +129,71 @@ void draw_history()
   
   // draw grid consumption history
   glcd.setFont(font_clR4x6);   		
-  glcd.drawString_P(50,9,PSTR("Power"));
-
+  glcd.drawString_P(48,9,PSTR("Power"));
 
   dtostrf((wh_consuming[0]/1000),0,1,str);
   glcd.setFont(font_clR4x6);
-  glcd.drawString(52,16,str);
+  glcd.drawString(48,16,str);
   
   dtostrf((wh_consuming[1]/1000),0,1,str);
   glcd.setFont(font_clR4x6);
-  glcd.drawString(52,23,str);
+  glcd.drawString(48,23,str);
   
   dtostrf((wh_consuming[2]/1000),0,1,str);
   glcd.setFont(font_clR4x6);
-  glcd.drawString(52,30,str);
+  glcd.drawString(48,30,str);
   
   dtostrf((wh_consuming[3]/1000),0,1,str);
   glcd.setFont(font_clR4x6);
-  glcd.drawString(52,37,str);
+  glcd.drawString(48,37,str);
   
   dtostrf((wh_consuming[4]/1000),0,1,str);
   glcd.setFont(font_clR4x6);
-  glcd.drawString(52,44,str);
+  glcd.drawString(48,44,str);
   
   dtostrf((wh_consuming[5]/1000),0,1,str);
   glcd.setFont(font_clR4x6);
-  glcd.drawString(52,51,str);
+  glcd.drawString(48,51,str);
   
   dtostrf((wh_consuming[6]/1000),0,1,str);
   glcd.setFont(font_clR4x6);
-  glcd.drawString(52,58,str);
+  glcd.drawString(48,58,str);
   
   
-  // adding some whitespace so I can test git push
+  
   
   
   // draw solar PV generation history
   glcd.setFont(font_clR4x6);   		
-  glcd.drawString_P(78,9,PSTR("PV"));
+  glcd.drawString_P(75,9,PSTR("PV"));
 
   dtostrf((wh_gen[0]/1000),0,1,str);
   glcd.setFont(font_clR4x6);
-  glcd.drawString(76,16,str);
+  glcd.drawString(73,16,str);
   
   dtostrf((wh_gen[1]/1000),0,1,str);
   glcd.setFont(font_clR4x6);
-  glcd.drawString(76,23,str);
+  glcd.drawString(73,23,str);
   
   dtostrf((wh_gen[2]/1000),0,1,str);
   glcd.setFont(font_clR4x6);
-  glcd.drawString(76,30,str);
+  glcd.drawString(73,30,str);
   
   dtostrf((wh_gen[3]/1000),0,1,str);
   glcd.setFont(font_clR4x6);
-  glcd.drawString(76,37,str);
+  glcd.drawString(73,37,str);
   
   dtostrf((wh_gen[4]/1000),0,1,str);
   glcd.setFont(font_clR4x6);
-  glcd.drawString(76,44,str);
+  glcd.drawString(73,44,str);
   
   dtostrf((wh_gen[5]/1000),0,1,str);
   glcd.setFont(font_clR4x6);
-  glcd.drawString(76,51,str);
+  glcd.drawString(73,51,str);
   
   dtostrf((wh_gen[6]/1000),0,1,str);
   glcd.setFont(font_clR4x6);
-  glcd.drawString(76,58,str);
+  glcd.drawString(73,58,str);
   
   
   
