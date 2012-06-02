@@ -43,11 +43,11 @@ void draw_main_screen()
   glcd.drawString(74,42,str);   
                
   glcd.setFont(font_clR4x6);   		//small font - Kwh
-  dtostrf((wh_consuming/1000),0,1,str);
+  dtostrf((wh_consuming[0]/1000),0,1,str);
   strcat(str,"Kwh today");  
   glcd.drawString(6,26,str);
                
-  dtostrf((wh_gen/1000),0,1,str); 
+  dtostrf((wh_gen[0]/1000),0,1,str); 
   strcat(str,"Kwh today");  
   glcd.drawString(71,26,str);
                              
@@ -105,6 +105,100 @@ void draw_page_two()
   
   delay(2000); 
   
+}
+
+void draw_history()
+{
+  glcd.clear;
+  glcd.fillRect(0,0,128,64,0);
+  
+  char str[50]; 
+  
+  glcd.setFont(font_clR6x8);
+  glcd.drawString_P(2,0,PSTR("History"));
+  
+  glcd.setFont(font_clR4x6);   	
+
+  glcd.drawString_P(2,16,PSTR("Today"));
+  glcd.drawString_P(2,23,PSTR("Yesterday"));
+  glcd.drawString_P(2,30,PSTR("2 days ago"));
+  glcd.drawString_P(2,37,PSTR("3 days ago"));
+  glcd.drawString_P(2,44,PSTR("4 days ago"));
+  glcd.drawString_P(2,51,PSTR("5 days ago"));
+  glcd.drawString_P(2,58,PSTR("6 days ago"));
+  
+  // draw grid consumption history
+  glcd.setFont(font_clR4x6);   		
+  glcd.drawString_P(48,9,PSTR("Power"));
+
+  dtostrf((wh_consuming[0]/1000),0,1,str);
+  glcd.setFont(font_clR4x6);
+  glcd.drawString(48,16,str);
+  
+  dtostrf((wh_consuming[1]/1000),0,1,str);
+  glcd.setFont(font_clR4x6);
+  glcd.drawString(48,23,str);
+  
+  dtostrf((wh_consuming[2]/1000),0,1,str);
+  glcd.setFont(font_clR4x6);
+  glcd.drawString(48,30,str);
+  
+  dtostrf((wh_consuming[3]/1000),0,1,str);
+  glcd.setFont(font_clR4x6);
+  glcd.drawString(48,37,str);
+  
+  dtostrf((wh_consuming[4]/1000),0,1,str);
+  glcd.setFont(font_clR4x6);
+  glcd.drawString(48,44,str);
+  
+  dtostrf((wh_consuming[5]/1000),0,1,str);
+  glcd.setFont(font_clR4x6);
+  glcd.drawString(48,51,str);
+  
+  dtostrf((wh_consuming[6]/1000),0,1,str);
+  glcd.setFont(font_clR4x6);
+  glcd.drawString(48,58,str);
+  
+  
+  
+  
+  
+  // draw solar PV generation history
+  glcd.setFont(font_clR4x6);   		
+  glcd.drawString_P(75,9,PSTR("PV"));
+
+  dtostrf((wh_gen[0]/1000),0,1,str);
+  glcd.setFont(font_clR4x6);
+  glcd.drawString(73,16,str);
+  
+  dtostrf((wh_gen[1]/1000),0,1,str);
+  glcd.setFont(font_clR4x6);
+  glcd.drawString(73,23,str);
+  
+  dtostrf((wh_gen[2]/1000),0,1,str);
+  glcd.setFont(font_clR4x6);
+  glcd.drawString(73,30,str);
+  
+  dtostrf((wh_gen[3]/1000),0,1,str);
+  glcd.setFont(font_clR4x6);
+  glcd.drawString(73,37,str);
+  
+  dtostrf((wh_gen[4]/1000),0,1,str);
+  glcd.setFont(font_clR4x6);
+  glcd.drawString(73,44,str);
+  
+  dtostrf((wh_gen[5]/1000),0,1,str);
+  glcd.setFont(font_clR4x6);
+  glcd.drawString(73,51,str);
+  
+  dtostrf((wh_gen[6]/1000),0,1,str);
+  glcd.setFont(font_clR4x6);
+  glcd.drawString(73,58,str);
+  
+  
+  
+  glcd.refresh();
+  delay(20000);    //20 sec delay
 }
 
 void backlight_control()
