@@ -161,9 +161,6 @@ void draw_history()
   glcd.drawString(52,58,str);
   
   
-  // adding some whitespace so I can test git push
-  
-  
   // draw solar PV generation history
   glcd.setFont(font_clR4x6);   		
   glcd.drawString_P(78,9,PSTR("PV"));
