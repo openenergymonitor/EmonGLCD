@@ -129,7 +129,11 @@ void draw_history()
   
   // draw grid consumption history
   glcd.setFont(font_clR4x6);   		
+<<<<<<< HEAD
   glcd.drawString_P(50,9,PSTR("Power"));
+=======
+  glcd.drawString_P(48,9,PSTR("Power"));
+>>>>>>> e0f882268eed634c49bf02764b4ff41da14738bb
 
   dtostrf((wh_consuming[0]/1000),0,1,str);
   glcd.setFont(font_clR4x6);
