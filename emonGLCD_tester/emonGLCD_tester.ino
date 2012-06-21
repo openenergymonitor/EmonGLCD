@@ -60,7 +60,8 @@ void setup () {
     pinMode(greenLED, OUTPUT); 
     pinMode(redLED, OUTPUT); 
     pinMode(enterswitchpin, INPUT); pinMode(upswitchpin, INPUT); pinMode(downswitchpin, INPUT); 
-    digitalWrite(enterswitchpin, HIGH); digitalWrite(upswitchpin, HIGH); digitalWrite(downswitchpin, HIGH); //enable Atmega328 10K internal pullup resistors 
+    // UNCOMMENT THE FOLLOWING LINE IF YOU HAVE emonGLCD V1.3 (http://openenergymonitor.blogspot.co.uk/2012/04/emonglcd-v13-switches-fix.html)
+    //digitalWrite(enterswitchpin, HIGH); digitalWrite(upswitchpin, HIGH); digitalWrite(downswitchpin, HIGH); //enable Atmega328 10K internal pullup resistors 
     
     sensors.begin();                         // start up the DS18B20 temp sensor onboard  
     sensors.requestTemperatures();

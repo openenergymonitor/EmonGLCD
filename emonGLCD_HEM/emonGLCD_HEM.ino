@@ -112,7 +112,8 @@ void setup () {
     pinMode(redLED, OUTPUT);  
     
     pinMode(enterswitchpin, INPUT); pinMode(upswitchpin, INPUT); pinMode(downswitchpin, INPUT); 
-    digitalWrite(enterswitchpin, HIGH); digitalWrite(upswitchpin, HIGH); digitalWrite(downswitchpin, HIGH); //enable Atmega328 10K internal pullup resistors
+    // UNCOMMENT THE FOLLOWING LINE IF YOU HAVE emonGLCD V1.3 (http://openenergymonitor.blogspot.co.uk/2012/04/emonglcd-v13-switches-fix.html)
+    //digitalWrite(enterswitchpin, HIGH); digitalWrite(upswitchpin, HIGH); digitalWrite(downswitchpin, HIGH); //enable Atmega328 10K internal pullup resistors
     
     sensors.begin();                         // start up the DS18B20 temp sensor onboard  
     sensors.requestTemperatures();
@@ -190,11 +191,13 @@ void loop () {
 
     //--------------------------------------------------------------------
     // Control toggling of screen pages
+    // emonGLCD V1.3 active low, V1.4: active high
     //-------------------------------------------------------------------- 
-     int S1=digitalRead(enterswitchpin); //low when pressed
+     int S1=digitalRead(enterswitchpin); //HIGH when pressed
        int S2=digitalRead(upswitchpin);    //low when pressed
        int S3=digitalRead(downswitchpin);  //low when pressed   
-    if (S1==0) draw_page_two();
+    if (S1==1) draw_page_two(); // V1.4
+    //if (S1==0) draw_page_two(); // V1.3
 
     //--------------------------------------------------------------------
     // Update the display every 200ms
