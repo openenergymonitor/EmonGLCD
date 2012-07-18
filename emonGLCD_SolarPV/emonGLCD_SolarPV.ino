@@ -24,6 +24,19 @@
 // Licenced under GNU GPL V3
 // http://openenergymonitor.org/emon/license
 
+// Libraries in the standard arduino libraries folder:
+//
+//	- OneWire library	http://www.pjrc.com/teensy/td_libs_OneWire.html
+//	- DallasTemperature	http://download.milesburton.com/Arduino/MaximTemperature
+//	- JeeLib		https://github.com/jcw/jeelib
+//	- RTClib		https://github.com/jcw/rtclib
+//	- GLCD_ST7565		https://github.com/jcw/glcdlib
+//
+// Other files in project directory (should appear in the arduino tabs above)
+//	- display.ino
+//	- serial.ino
+//
+
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 #define DEBUG
 
