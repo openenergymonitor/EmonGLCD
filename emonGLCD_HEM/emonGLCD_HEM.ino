@@ -24,6 +24,7 @@
 //
 //	- OneWire library	http://www.pjrc.com/teensy/td_libs_OneWire.html
 //	- DallasTemperature	http://download.milesburton.com/Arduino/MaximTemperature
+//                           or https://github.com/milesburton/Arduino-Temperature-Control-Library
 //	- JeeLib		https://github.com/jcw/jeelib
 //	- RTClib		https://github.com/jcw/rtclib
 //	- GLCD_ST7565		https://github.com/jcw/glcdlib

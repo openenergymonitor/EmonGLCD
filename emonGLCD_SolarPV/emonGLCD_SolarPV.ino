@@ -19,6 +19,8 @@
 // GLCD library by Jean-Claude Wippler: JeeLabs.org
 // 2010-05-28 <jcw@equi4.com> http://opensource.org/licenses/mit-license.php
 //
+// History page by vworp https://github.com/vworp
+//
 // Authors: Glyn Hudson and Trystan Lea
 // Part of the: openenergymonitor.org project
 // Licenced under GNU GPL V3
@@ -28,6 +30,7 @@
 //
 //	- OneWire library	http://www.pjrc.com/teensy/td_libs_OneWire.html
 //	- DallasTemperature	http://download.milesburton.com/Arduino/MaximTemperature
+//                           or https://github.com/milesburton/Arduino-Temperature-Control-Library
 //	- JeeLib		https://github.com/jcw/jeelib
 //	- RTClib		https://github.com/jcw/rtclib
 //	- GLCD_ST7565		https://github.com/jcw/glcdlib
@@ -36,14 +39,13 @@
 //	- display.ino
 //	- serial.ino
 //
-
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 #define DEBUG
 
 //--------------------------------------------------------------------------------------------
 // Solar PV setup - enter type 1 or type 2 depending on setup. See:http://openenergymonitor.org/emon/applications/solarpv
 //--------------------------------------------------------------------------------------------
-const int SolarPV_type=1;
+const int SolarPV_type=2;
 //--------------------------------------------------------------------------------------------
 
 #include <OneWire.h>		    // http://www.pjrc.com/teensy/td_libs_OneWire.html
@@ -92,7 +94,8 @@ PayloadBase emonbase;
 // Power variables
 //--------------------------------------------------------------------------------------------
 int importing, night;                                  //flag to indicate import/export
-double consuming, gen, grid, wh_gen, wh_consuming;     //integer variables to store ammout of power currenty being consumed grid (in/out) +gen
+double consuming, gen, grid;
+double wh_gen[7], wh_consuming[7];     //integer variables to store ammout of power currenty being consumed grid (in/out) +gen
 unsigned long whtime;                    	       //used to calculate energy used per day (kWh/d)
 
 //--------------------------------------------------------------------------------------------
@@ -107,7 +110,7 @@ double temp,maxtemp,mintemp;
 //-------------------------------------------------------------------------------------------- 
 RTC_Millis RTC;
 int hour;
-const int time_difference=0;                        //set number of hours forward (positive) for backwards (negative) to make the emonGLCD time match local time
+const int time_difference=1;                        //set number of hours forward (positive) for backwards (negative) to make the emonGLCD time match local time
   
 //-------------------------------------------------------------------------------------------- 
 // Flow control
@@ -123,7 +126,7 @@ unsigned long fast_update;                   // Used to count time for fast 100m
 void setup () {
     rf12_initialize(MYNODE, freq,group);
     
-    glcd.begin(0x18);    //begin glcd library and set contrast 0x20 is max, 0x18 seems to look best on emonGLCD
+    glcd.begin(0x20);    //begin glcd library and set contrast 0x20 is max, 0x18 seems to look best on emonGLCD
     glcd.backLight(200); //max 255
    
     #ifdef DEBUG 
@@ -190,7 +193,7 @@ void loop () {
           rf12_sendStart(0, &emonglcd, sizeof emonglcd);                      // send emonglcd data
           rf12_sendWait(0);
           #ifdef DEBUG 
-            Serial.println("3 emonglcd sent");                                // print status
+            Serial.println("\n3 emonglcd sent");                                // print status
           #endif                               
         }
       }
@@ -228,21 +231,31 @@ void loop () {
     if ((millis()-fast_update)>200)
     {
       fast_update = millis();
-      draw_main_screen();
+
+       //Read switches 
+       int S1=digitalRead(enterswitchpin); //low when pressed
+       int S2=digitalRead(upswitchpin);    //low when pressed
+       int S3=digitalRead(downswitchpin);  //low when pressed
+       
+       if (S1==1) // S1==0 if v1.3
+       { 
+         draw_page_two(); // V1.4
+       }
+       else if (S2==1) // S2==0 if v1.3
+       {
+         draw_history();       //if 2nd switch (middle) is pressed, display 3rd page
+       }
+       else
+       {
+         draw_main_screen();
+       }
        // Control led's
        led_control();
     
     }
   
-  //Read switches 
-    // emonGLCD V1.3 active low, V1.4: active high
-       int S1=digitalRead(enterswitchpin); //HIGH (1.4)when pressed
-       int S2=digitalRead(upswitchpin);    //HIGH (1.4) when pressed
-       int S3=digitalRead(downswitchpin);  //HIGH (1.4) when pressed
+
        
-    if (S1==1) draw_page_two(); // V1.4
-    //if (S1==0) draw_page_two(); // V1.3
-   
 } //end loop
 //--------------------------------------------------------------------------------------------
 
@@ -254,7 +267,22 @@ void power_calculations()
   DateTime now = RTC.now();
   int last_hour = hour;
   hour = now.hour();
-  if (last_hour == 23 && hour == 00) { wh_gen = 0; wh_consuming = 0; }
+  if (last_hour == 23 && hour == 00) 
+{ 
+  int i;
+  for (i=6; i>0; i--)
+  {
+    wh_gen[i]=wh_gen[i-1]; 
+  }
+  wh_gen[0] = 0; 
+  
+  for(i=6; i>0; i--)
+  {
+    wh_consuming[i]=wh_consuming[i-1];
+  }
+  wh_consuming[0] = 0; 
+  
+}
   
  gen = emontx.power2;  if (gen<50) gen=0;	// set minimum generation threshold before emonGLCD displays generation 
   
@@ -281,9 +309,9 @@ void power_calculations()
   unsigned long lwhtime = whtime;
   whtime = millis();
   double whInc = gen * ((whtime-lwhtime)/3600000.0);
-  wh_gen=wh_gen+whInc;
+  wh_gen[0]=wh_gen[0]+whInc;
   whInc = consuming *((whtime-lwhtime)/3600000.0);
-  wh_consuming=wh_consuming+whInc;
+  wh_consuming[0]=wh_consuming[0]+whInc;
   //---------------------------------------------------------------------- 
 }
 
