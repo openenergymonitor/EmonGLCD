@@ -126,7 +126,7 @@ unsigned long fast_update;                   // Used to count time for fast 100m
 void setup () {
     rf12_initialize(MYNODE, freq,group);
     
-    glcd.begin(0x20);    //begin glcd library and set contrast 0x20 is max, 0x18 seems to look best on emonGLCD
+    glcd.begin(0x18);    //begin glcd library and set contrast 0x20 is max, 0x18 seems to look best on emonGLCD
     glcd.backLight(200); //max 255
    
     #ifdef DEBUG 
