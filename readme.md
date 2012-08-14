@@ -31,6 +31,7 @@ OneWire library: http://www.pjrc.com/teensy/td_libs_OneWire.html
 
 # Template use
 
+```
 void draw_power_page(char* powerstr, double powerval, char* energystr,  double energyval)
 
 void draw_temperature_time_footer(double temp, double mintemp, double maxtemp, double hour, double minute)
@@ -40,3 +41,4 @@ void draw_solar_page(double use, double usekwh, double gen, double maxgen, doubl
 void draw_dhw_page(double CYLT)
 
 void draw_history_page(double genkwh[7], double usekwh[7])
+```
