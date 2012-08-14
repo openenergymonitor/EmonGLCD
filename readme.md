@@ -17,15 +17,26 @@ OneWire library: http://www.pjrc.com/teensy/td_libs_OneWire.html
 
 # emonGLCD sketch examples 
 
-* HomeEnergyMonitor: Home Energy Monitor Example (http://openenergymonitor.org/emon/applications/homeenergy) for dispaying data from single CT emonTx, and posting on-board temperature online to emoncms with emonBase/NanodeRF. Also gets time from interent via NanodeRF. 
+* **HomeEnergyMonitor:** Home Energy Monitor Example (http://openenergymonitor.org/emon/applications/homeenergy) for dispaying data from single CT emonTx, and posting on-board temperature online to emoncms with emonBase/NanodeRF. Also gets time from interent via NanodeRF. 
 
-* HomeEnergyMonitor_Old: an old version that is not based on the templates implementation
+* **HomeEnergyMonitor_Old:** an old version that is not based on the templates implementation
 
-* SolarPV - Solar PV monitoring example (http://openenergymonitor.org/emon/applications/solarpv) for displaying data from 2CT solar PV monitoring emonTx (type 1 and 2 - see comments in sketch). Posts room temperature online to emoncms via emonBase/NanodeRF. Also gets current time for interent via NanodeRF. 
+* **SolarPV:** Solar PV monitoring example (http://openenergymonitor.org/emon/applications/solarpv) for displaying data from 2CT solar PV monitoring emonTx (type 1 and 2 - see comments in sketch). Posts room temperature online to emoncms via emonBase/NanodeRF. Also gets current time for interent via NanodeRF. 
 
-* SolarPV_Old: an old version that is not based on the templates implementation
+* **SolarPV_Old:** an old version that is not based on the templates implementation
 
-* Template_Example: basic template implementation example
+* **Template_Example:** basic template implementation example
 
-* Tester - simple sketch to test the function of the temperature sensor, light sensor and tri-colour LED's. Example can be used with or without the LCD and without the RFM12B. If LCD is connected results will be displayed on LCD. 
+* **Tester:** simple sketch to test the function of the temperature sensor, light sensor and tri-colour LED's. Example can be used with or without the LCD and without the RFM12B. If LCD is connected results will be displayed on LCD. 
 
+# Template use
+
+void draw_power_page(char* powerstr, double powerval, char* energystr,  double energyval)
+
+void draw_temperature_time_footer(double temp, double mintemp, double maxtemp, double hour, double minute)
+
+void draw_solar_page(double use, double usekwh, double gen, double maxgen, double genkwh, double temp, double mintemp, double maxtemp, double hour, double minute, unsigned long last_emontx, unsigned long last_emonbase)
+
+void draw_dhw_page(double CYLT)
+
+void draw_history_page(double genkwh[7], double usekwh[7])
