@@ -66,7 +66,7 @@ void loop()
     else
     {
       // use, usekwh, gen, maxgen, genkwh, temp, mintemp, maxtemp, hour, minute
-      draw_solar_page(use, usekwh, gen, 2050, genkwh, temp, mintemp, maxtemp, 12,43);
+      draw_solar_page(use, usekwh, gen, 2050, genkwh, temp, mintemp, maxtemp, 12,43,0,0);
       glcd.refresh();
     }
     

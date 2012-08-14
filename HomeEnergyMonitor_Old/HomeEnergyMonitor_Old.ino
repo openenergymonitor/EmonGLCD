@@ -60,11 +60,11 @@ const int downswitchpin=19;         // digital pin of down switch - low when pre
 const int maxPower=8000;            //(8kW) Power level at which red LED is brightest - ideally this should really be calculated automatically using a clever algorithum! 
 
 //--------------------------------------------------------------------------------------------
-// RFM12B Setup
+// RFM12B Settings
 //--------------------------------------------------------------------------------------------
-#define MYNODE 20            //Should be unique on network, node ID 30 reserved for base station
-#define freq RF12_433MHZ     //frequency - match to same frequency as RFM12B module (change to 868Mhz or 915Mhz if appropriate)
-#define group 210 //network group, must be same as emonTx and emonBase
+#define MYNODE 20            // Should be unique on network, node ID 30 reserved for base station
+#define freq RF12_433MHZ     // frequency - match to same frequency as RFM12B module (change to 868Mhz or 915Mhz if appropriate)
+#define group 210            // network group, must be same as emonTx and emonBase
 
 //---------------------------------------------------
 // Data structures for transfering data between units
