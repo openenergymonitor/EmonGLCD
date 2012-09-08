@@ -48,7 +48,6 @@ GLCD_ST7565 glcd;
 
 #include <OneWire.h>		    // http://www.pjrc.com/teensy/td_libs_OneWire.html
 #include <DallasTemperature.h>      // http://download.milesburton.com/Arduino/MaximTemperature/ (3.7.2 Beta needed for Arduino 1.0)
-
 #include <RTClib.h>                 // Real time clock (RTC) - used for software RTC to reset kWh counters at midnight
 #include <Wire.h>                   // Part of Arduino libraries - needed for RTClib
 RTC_Millis RTC;
@@ -60,14 +59,6 @@ RTC_Millis RTC;
 #define freq RF12_433MHZ     // frequency - match to same frequency as RFM12B module (change to 868Mhz or 915Mhz if appropriate)
 #define group 210            // network group, must be same as emonTx and emonBase
 
-#define ONE_WIRE_BUS 5              // temperature sensor connection - hard wired 
-
-unsigned long fast_update, slow_update;
-
-OneWire oneWire(ONE_WIRE_BUS);
-DallasTemperature sensors(&oneWire);
-double temp,maxtemp,mintemp;
-
 //---------------------------------------------------
 // Data structures for transfering data between units
 //---------------------------------------------------
@@ -77,23 +68,45 @@ PayloadTX emontx;
 typedef struct { int temperature; } PayloadGLCD;
 PayloadGLCD emonglcd;
 
-int hour = 0, minute = 0;
-double usekwh = 0, genkwh = 0;
-double use_history[7], gen_history[7];
-
-boolean last_switch_state, switch_state; 
-byte page = 1;
-
+//---------------------------------------------------
+// emonGLCD SETUP
+//---------------------------------------------------
+#define emonGLCDV1.3                // un-comment if using older V1.3 emonGLCD PCB - enables required internal pull up resistors. Not needed for V1.4 onwards 
 const int greenLED=6;               // Green tri-color LED
 const int redLED=9;                 // Red tri-color LED
 const int LDRpin=4;    		    // analog pin of onboard lightsensor 
+const int switch1=15;               // Push switch digital pins (active low for V1.3, active high for V1.4)
+const int switch2=16;
+const int switch3=19;
+
+const int maxgen=3000;              // peak output of soalr PV system in W - used to calculate when to change cloud icon to a sun
+
+//---------------------------------------------------
+// emonGLCD variables 
+//---------------------------------------------------
+int hour = 0, minute = 0;
+double usekwh = 0, genkwh = 0;
+double use_history[7], gen_history[7];
 int cval_use, cval_gen;
+byte page = 1;
+
+
+//---------------------------------------------------
+// Temperature Sensor Setup
+//---------------------------------------------------
+#define ONE_WIRE_BUS 5              // temperature sensor connection - hard wired 
+OneWire oneWire(ONE_WIRE_BUS);
+DallasTemperature sensors(&oneWire);
+double temp,maxtemp,mintemp;
+
 
 //-------------------------------------------------------------------------------------------- 
 // Flow control
 //-------------------------------------------------------------------------------------------- 
 unsigned long last_emontx;                   // Used to count time from last emontx update
 unsigned long last_emonbase;                   // Used to count time from last emontx update
+boolean last_switch_state, switch_state; 
+unsigned long fast_update, slow_update;
 
 //--------------------------------------------------------------------------------------------
 // Setup
@@ -112,6 +125,11 @@ void setup()
 
   pinMode(greenLED, OUTPUT); 
   pinMode(redLED, OUTPUT); 
+  
+  #ifdef emonGLCDV1.3                      //enable internal pull up resistors for push switches on emonGLCD V1.3 (old) 
+  pinMode(switch1, INPUT); pinMode(switch2, INPUT); pinMode(switch2, INPUT);
+  digitalWrite(switch1, HIGH); digitalWrite(switch2, HIGH); digitalWrite(switch3, HIGH); 
+  #endif
 }
 
 //--------------------------------------------------------------------------------------------
@@ -165,12 +183,13 @@ void loop()
     cval_gen = cval_gen + (emontx.power2 - cval_gen)*0.50;
     
     last_switch_state = switch_state;
-    switch_state = digitalRead(15);  
+    switch_state = digitalRead(switch1);  
     if (!last_switch_state && switch_state) { page += 1; if (page>4) page = 1; }
 
     if (page==1)
     {
-      draw_solar_page(cval_use, usekwh, cval_gen, 2050, genkwh, temp, mintemp, maxtemp, hour,minute, last_emontx, last_emonbase);
+                          //use, usekwh, gen,    maxgen, genkwh, temp, mintemp, maxtemp, hour, minute, last_emontx, last_emonbase)
+      draw_solar_page(cval_use, usekwh, cval_gen, maxgen, genkwh, temp, mintemp, maxtemp, hour,minute, last_emontx, last_emonbase);
       glcd.refresh();
     }
     else if (page==2)
