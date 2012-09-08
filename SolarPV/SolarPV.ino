@@ -14,7 +14,7 @@
 // this sketch is currently setup for type 1 solar PV monitoring where CT's monitor generation and consumption separately
 // The sketch assumes emonx.power1 is consuming/grid power and emontx.power2 is solarPV generation
 // to use this sketch for type 2 solar PV monitoring where CT's monitor consumption and grid import/export using an AC-AC adapter to detect current flow direction 
-//    -change line 220-221- see comments in on specific lines. See Solar PV documentation for explination 
+//    
 
 // GLCD library by Jean-Claude Wippler: JeeLabs.org
 // 2010-05-28 <jcw@equi4.com> http://opensource.org/licenses/mit-license.php
@@ -71,15 +71,17 @@ PayloadGLCD emonglcd;
 //---------------------------------------------------
 // emonGLCD SETUP
 //---------------------------------------------------
-//#define emonGLCDV1.3                // un-comment if using older V1.3 emonGLCD PCB - enables required internal pull up resistors. Not needed for V1.4 onwards 
+//#define emonGLCDV1.3               // un-comment if using older V1.3 emonGLCD PCB - enables required internal pull up resistors. Not needed for V1.4 onwards 
+const int SolarPV_type=1;            // Select solar PV wiring type - Type 1 is when use and gen can be monitored seperatly. Type 2 is when gen and use can only be monitored together, see solar PV application documentation for more info
+const int maxgen=3000;              // peak output of soalr PV system in W - used to calculate when to change cloud icon to a sun
+const int PV_gen_offset=20;         // When generation drops below this level generation will be set to zero - used to force generation level to zero at night
+
 const int greenLED=6;               // Green tri-color LED
 const int redLED=9;                 // Red tri-color LED
 const int LDRpin=4;    		    // analog pin of onboard lightsensor 
 const int switch1=15;               // Push switch digital pins (active low for V1.3, active high for V1.4)
 const int switch2=16;
 const int switch3=19;
-
-const int maxgen=3000;              // peak output of soalr PV system in W - used to calculate when to change cloud icon to a sun
 
 //---------------------------------------------------
 // emonGLCD variables 
@@ -179,8 +181,17 @@ void loop()
     gen_history[0] = genkwh;
     use_history[0] = usekwh;
     
+    if (SolarPV_type==1){
     cval_use = cval_use + (emontx.power1 - cval_use)*0.50;
     cval_gen = cval_gen + (emontx.power2 - cval_gen)*0.50;
+    }
+    
+    if (SolarPV_type==2){
+    cval_use = cval_use + ((emontx.power1-emontx.power2) - cval_use)*0.50;
+    cval_gen = cval_gen + (emontx.power2 - cval_gen)*0.50;
+    }
+      
+    if (cval_gen<PV_gen_offset) cval_gen=0;                  //set generation to zero when generation level drops below a certian level (at night) eg. 20W
     
     last_switch_state = switch_state;
     switch_state = digitalRead(switch1);  
