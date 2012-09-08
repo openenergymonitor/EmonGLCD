@@ -71,7 +71,7 @@ PayloadGLCD emonglcd;
 //---------------------------------------------------
 // emonGLCD SETUP
 //---------------------------------------------------
-#define emonGLCDV1.3                // un-comment if using older V1.3 emonGLCD PCB - enables required internal pull up resistors. Not needed for V1.4 onwards 
+//#define emonGLCDV1.3                // un-comment if using older V1.3 emonGLCD PCB - enables required internal pull up resistors. Not needed for V1.4 onwards 
 const int greenLED=6;               // Green tri-color LED
 const int redLED=9;                 // Red tri-color LED
 const int LDRpin=4;    		    // analog pin of onboard lightsensor 

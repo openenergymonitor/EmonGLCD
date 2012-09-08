@@ -119,8 +119,13 @@ void draw_solar_page(double use, double usekwh, double gen, double maxgen, doubl
 
   // Indicator for consuming or generating   
   glcd.drawBitmap(51,34,icon_lines_12x12,16,12,1);
-  if (importing==1) glcd.drawString_P(35,34,PSTR("<<")); else glcd.drawString_P(35,34,PSTR(">>"));
-
+  if (importing==1) glcd.drawString_P(35,34,PSTR("<<")); 
+  else 
+  {
+    glcd.drawString_P(35,34,PSTR(">>"));
+    grid=grid*-1;                                      //keep grid import/export positive - arrows change direction to indicate power flow direction
+  }
+  
   //big bold font
   glcd.setFont(font_helvB14);
 
