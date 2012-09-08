@@ -14,7 +14,7 @@
 // this sketch is currently setup for type 1 solar PV monitoring where CT's monitor generation and consumption separately
 // The sketch assumes emonx.power1 is consuming/grid power and emontx.power2 is solarPV generation
 // to use this sketch for type 2 solar PV monitoring where CT's monitor consumption and grid import/export using an AC-AC adapter to detect current flow direction 
-//    
+// change type to '2' on emonGLCD setup section below.    
 
 // GLCD library by Jean-Claude Wippler: JeeLabs.org
 // 2010-05-28 <jcw@equi4.com> http://opensource.org/licenses/mit-license.php
