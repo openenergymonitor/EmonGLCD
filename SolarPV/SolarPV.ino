@@ -166,9 +166,16 @@ void loop()
     int last_hour = hour;
     hour = now.hour();
     minute = now.minute();
-
+    
+    if (SolarPV_type==1){
     usekwh += (emontx.power1 * 0.2) / 3600000;
     genkwh += (emontx.power2 * 0.2) / 3600000;
+    }
+    
+    if (SolarPV_type==2){
+    usekwh += (emontx.power1 + emontx.power2 * 0.2) / 3600000;
+    genkwh += (emontx.power2 * 0.2) / 3600000;
+    }
     
     if (last_hour == 23 && hour == 00) 
     { 
