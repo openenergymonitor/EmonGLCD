@@ -187,7 +187,7 @@ void loop()
     }
     
     if (SolarPV_type==2){
-    cval_use = cval_use + ((emontx.power1-emontx.power2) - cval_use)*0.50;
+    cval_use = cval_use + ((emontx.power1+emontx.power2) - cval_use)*0.50;
     cval_gen = cval_gen + (emontx.power2 - cval_gen)*0.50;
     }
       
