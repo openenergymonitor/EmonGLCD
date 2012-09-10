@@ -235,7 +235,7 @@ void loop()
     int PWRleds= map(cval_gen-cval_use, 0, maxgen, 0, 255);     // Map importing value from 0-4Kw (LED brightness - cval3 is the smoothed grid value - see display above 
     PWRleds = constrain(PWRleds, 0, 255);             // Constrain the value to make sure its a PWM value 0-255
    
-    if (cval_gen>0) {
+    if (cval_gen>PV_gen_offset) {
       if (cval_gen > cval_use) {            //show green LED when gen>consumption cval are the smooth curve values  
 	analogWrite(redLED, 0);         
 	analogWrite(greenLED, PWRleds);    
