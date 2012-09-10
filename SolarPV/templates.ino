@@ -154,7 +154,7 @@ void draw_solar_page(double use, double usekwh, double gen, double maxgen, doubl
     itoa((int)gen,str,10);
     strcat(str,"w");   
   }
-  if (gen>maxgen) maxgen=gen;
+  //if (gen>maxgen) maxgen=gen;                  -could cause an error if any large spurious readings are detected, max gen can be set manually at beginning of sketch
   imageindex=int(gen/maxgen*5-0.5);
   glcd.drawBitmap(115,0,icon_solar_12x12[imageindex],16,12,1);
   glcd.drawString(71,9,str);

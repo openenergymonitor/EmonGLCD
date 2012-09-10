@@ -232,8 +232,9 @@ void loop()
     LDRbacklight = constrain(LDRbacklight, 0, 255);   // Constrain the value to make sure its a PWM value 0-255
     if ((hour > 22) ||  (hour < 5)) glcd.backLight(0); else glcd.backLight(LDRbacklight);  
 
-    int PWRleds= map(cval_gen-cval_use, 0, maxgen, 0, 255);     // Map importing value from 0-4Kw (LED brightness - cval3 is the smoothed grid value - see display above 
-    PWRleds = constrain(PWRleds, 0, 255);             // Constrain the value to make sure its a PWM value 0-255
+    int PWRleds= map(cval_use-cval_gen, 0, maxgen, 0, 255);     // Map importing value from (LED brightness - cval3 is the smoothed grid value - see display above 
+    if (PWRleds<0) PWRleds = PWRleds*-1;                        // keep it positive 
+    PWRleds = constrain(PWRleds, 0, 255);                       // Constrain the value to make sure its a PWM value 0-255
    
     if (cval_gen>PV_gen_offset) {
       if (cval_gen > cval_use) {            //show green LED when gen>consumption cval are the smooth curve values  
