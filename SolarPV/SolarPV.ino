@@ -173,7 +173,7 @@ void loop()
     }
     
     if (SolarPV_type==2){
-    usekwh += (emontx.power1 + emontx.power2 * 0.2) / 3600000;
+    usekwh += ((emontx.power1 + emontx.power2) * 0.2) / 3600000;
     genkwh += (emontx.power2 * 0.2) / 3600000;
     }
     
