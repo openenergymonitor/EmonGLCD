@@ -103,7 +103,7 @@ void draw_solar_page(double use, double usekwh, double gen, double maxgen, doubl
     glcd.setFont(font_clR4x6);
     itoa((millis()-last_emontx)/1000, str, 10);
     strcat(str,"sec TxFail");
-    glcd.drawString(676,0,str);
+    glcd.drawString(66,0,str);
   }
   if ((millis()-last_emonbase)>120000)
   {
