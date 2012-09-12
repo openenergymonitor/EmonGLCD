@@ -31,7 +31,7 @@ void draw_power_page(char* powerstr, double powerval, char* energystr,  double e
   glcd.setFont(font_clR6x8);
   if (energyval<10.0) dtostrf(energyval,0,1,str); else itoa((int)energyval,str,10);
   strcat(str,"kWh");
-  glcd.drawString(87,38,str);        
+  glcd.drawString(85,38,str);        
 }
 
 
@@ -133,7 +133,7 @@ void draw_solar_page(double use, double usekwh, double gen, double maxgen, doubl
   if(use > 1000)
   {
     dtostrf(use/1000,2,1,str);
-    strcat(str,"kW");   
+    strcat(str,"kw");   
   }
   else
   {
@@ -147,7 +147,7 @@ void draw_solar_page(double use, double usekwh, double gen, double maxgen, doubl
   if(gen>1000)
   {
     dtostrf(gen/1000,2,1,str);
-    strcat(str,"kW");   
+    strcat(str,"kw");   
   }
   else
   {
@@ -163,7 +163,7 @@ void draw_solar_page(double use, double usekwh, double gen, double maxgen, doubl
   if(grid<-1000 || grid>1000)
   {
     dtostrf(grid/1000,2,1,str);
-    strcat(str,"kW");   
+    strcat(str,"kw");   
   }
   else
   {
@@ -190,12 +190,12 @@ void draw_solar_page(double use, double usekwh, double gen, double maxgen, doubl
 
   // Kwh consumed today
   dtostrf(usekwh,0,1,str);
-  strcat(str,"Kwh today");  
+  strcat(str,"kWh today");  
   glcd.drawString(6,26,str);
 
   // Kwh generated today
   dtostrf(genkwh,0,1,str); 
-  strcat(str,"Kwh today");  
+  strcat(str,"kWh today");  
   glcd.drawString(71,26,str);
 
   // Minimum and maximum temperatures
