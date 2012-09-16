@@ -101,17 +101,28 @@ void draw_solar_page(double use, double usekwh, double gen, double maxgen, doubl
   {
     // small font
     glcd.setFont(font_clR4x6);
-    itoa((millis()-last_emontx)/1000, str, 10);
-    strcat(str,"sec TxFail");
-    glcd.drawString(66,0,str);
+    int emonTx_fail=(millis()-last_emontx)/1000;
+    if (emonTx_fail<100){
+      itoa(emonTx_fail, str, 10);
+      strcat(str,"sec TxFail");
+      glcd.drawString(66,0,str);
+    }
+    else
+      glcd.drawString(66,0,PSTR("TxFail"));
+    
   }
   if ((millis()-last_emonbase)>120000)
   {
     // small font
     glcd.setFont(font_clR4x6);
-    itoa((millis()-last_emonbase)/60000, str, 10);
-    strcat(str,"min baseFail");
-    glcd.drawString(67,34,str);
+    int emonbase_fail=((millis()-last_emonbase)/60000);
+    if (emonbase_fail<100){
+      itoa(emonbase_fail, str, 10);
+      strcat(str,"min baseFail");
+      glcd.drawString(67,34,str);
+    }
+    else glcd.drawString(67,34,PSTR("baseFail"));
+    
   }
   
   // medium font

@@ -99,7 +99,7 @@ byte page = 1;
 #define ONE_WIRE_BUS 5              // temperature sensor connection - hard wired 
 OneWire oneWire(ONE_WIRE_BUS);
 DallasTemperature sensors(&oneWire);
-double temp,maxtemp,mintemp;
+double temp, maxtemp,mintemp;
 
 
 //-------------------------------------------------------------------------------------------- 
@@ -256,7 +256,8 @@ void loop()
     slow_update = millis();
 
     sensors.requestTemperatures();
-    temp = (sensors.getTempCByIndex(0));
+    double rawtemp = (sensors.getTempCByIndex(0));
+    if ((rawtemp>-20) && (rawtemp<100)) temp=rawtemp;                  //is temperature withing reasonable limits?
     if (temp > maxtemp) maxtemp = temp;
     if (temp < mintemp) mintemp = temp;
    
