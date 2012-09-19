@@ -257,7 +257,7 @@ void loop()
 
     sensors.requestTemperatures();
     double rawtemp = (sensors.getTempCByIndex(0));
-    if ((rawtemp>-20) && (rawtemp<100)) temp=rawtemp;                  //is temperature withing reasonable limits?
+    if ((rawtemp>-20) && (rawtemp<50)) temp=rawtemp;                  //is temperature withing reasonable limits?
     if (temp > maxtemp) maxtemp = temp;
     if (temp < mintemp) mintemp = temp;
    
