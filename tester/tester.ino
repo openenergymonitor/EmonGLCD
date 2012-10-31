@@ -144,9 +144,9 @@ void loop () {
  digitalWrite(greenLED,LOW); digitalWrite(redLED,HIGH);
   }
   
-  if (S1==0) glcd.drawString_P(60,  55, PSTR("Enter"));
-  if (S2==0) glcd.drawString_P(60,  55, PSTR("Up"));
-  if (S3==0) glcd.drawString_P(60,  55, PSTR("Down"));
+  if (S1==1) glcd.drawString_P(60,  55, PSTR("Enter"));
+  if (S2==1) glcd.drawString_P(60,  55, PSTR("Up"));
+  if (S3==1) glcd.drawString_P(60,  55, PSTR("Down"));
     
     
     glcd.refresh();
