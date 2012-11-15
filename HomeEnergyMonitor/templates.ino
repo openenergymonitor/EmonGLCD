@@ -213,7 +213,7 @@ void draw_solar_page(double use, double usekwh, double gen, double maxgen, doubl
 
 }
 
-void draw_dhw_page(double CYLT)
+/*void draw_dhw_page(double CYLT)
 {
   glcd.clear();
   glcd.fillRect(0,0,128,64,0);
@@ -325,5 +325,6 @@ void draw_history_page(double genkwh[7], double usekwh[7])
   glcd.drawString(76,58,str);
   
   glcd.refresh();
-}
+}*/
+
 
