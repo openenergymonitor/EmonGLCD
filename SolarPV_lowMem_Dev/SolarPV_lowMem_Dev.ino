@@ -65,7 +65,7 @@ RTC_Millis RTC;
 typedef struct { int power1, power2, power3, Vrms; } PayloadTX;         // neat way of packaging data for RF comms
 PayloadTX emontx;
 
-typedef struct { int temperature; } PayloadGLCD;
+typedef struct { int temperature, ldr; } PayloadGLCD;
 PayloadGLCD emonglcd;
 
 //---------------------------------------------------
@@ -231,6 +231,7 @@ void loop()
     if (temp < mintemp) mintemp = temp;
    
     emonglcd.temperature = (int) (temp * 100);                       // set emonglcd payload  
+    emonglcd.ldr = analogRead(LDRpin);                               // set emonglcd payload LDR
     rf12_recvDone();                                                 // Send current emonGLCD temperature using RFM12B sending code from JBecker http://openenergymonitor.org/emon/node/1051?page=2                               
     if (rf12_canSend() )
     
