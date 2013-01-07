@@ -12,7 +12,7 @@ void draw_power_page(char* powerstr, double powerval, char* energystr,  double e
   glcd.clear();
   glcd.fillRect(0,0,128,64,0);
   
-  char str[10];    			 //variable to store conversion 
+  char str[10];      		 //variable to store conversion 
   glcd.setFont(font_clR6x8);      
   strcpy(str,powerstr);  
   strcat(str," NOW:"); 
@@ -75,7 +75,7 @@ void draw_temperature_time_footer(double temp, double mintemp, double maxtemp, d
 //------------------------------------------------------------------
 // Draws the Solar import/export page
 //------------------------------------------------------------------
-void draw_solar_page(double use, double usekwh, double gen, double maxgen, double genkwh, double temp, double mintemp, double maxtemp, double hour, double minute, unsigned long last_emontx, unsigned long last_emonbase)
+void draw_solar_page(double use, double usekwh, double gen, double maxgen, double genkwh, double temp, byte mintemp, byte maxtemp, byte hour, byte minute, unsigned long last_emontx, unsigned long last_emonbase)
 {
   
   byte MINTEMP = -15;
@@ -228,5 +228,4 @@ void draw_solar_page(double use, double usekwh, double gen, double maxgen, doubl
   glcd.drawString(28,58,str); 
 
 }
-
 
