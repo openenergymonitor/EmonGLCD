@@ -168,13 +168,13 @@ void loop()
     minute = now.minute();
     
     if (SolarPV_type==1)
-    {                             //Solar PV type1          
-      usekwh += (emontx.power1 * 0.2) / 3600000;
+    {                                                                   //Solar PV type1          
+      usekwh += (emontx.power1 * 0.0000000556);                         //== (emontx.power1 * 0.2) / 3600000 
       cval_use = cval_use + (emontx.power1 - cval_use)*0.50;
     }
-    if (SolarPV_type==2)                                            //Soalr PV type 2
+    if (SolarPV_type==2)                                                //Soalr PV type 2
     {
-      usekwh += ((emontx.power1 + emontx.power2) * 0.2) / 3600000;
+      usekwh += ((emontx.power1 + emontx.power2) * 0.0000000556);      //((emontx.power1 + emontx.power2) * 0.2) / 3600000 ;
       cval_use = cval_use + ((emontx.power1+emontx.power2) - cval_use)*0.50;
     }
    
@@ -185,11 +185,7 @@ void loop()
     {  
       genkwh = 0;
       usekwh = 0;
-      //int i; for (i=6; i>0; i--) gen_history[i] = gen_history[i-1];
-       //for(i=6; i>0; i--) use_history[i] = use_history[i-1];
     }
-    //gen_history[0] = genkwh;
-    //use_history[0] = usekwh;  
  
     if (cval_gen<PV_gen_offset) cval_gen=0;                  //set generation to zero when generation level drops below a certian level (at night) eg. 20W
     
@@ -233,9 +229,13 @@ void loop()
     if (temp > maxtemp) maxtemp = temp;
     if (temp < mintemp) mintemp = temp;
    
-    emonglcd.temperature = (int) (temp * 100);                          // set emonglcd payload
-    int i = 0; while (!rf12_canSend() && i<10) {rf12_recvDone(); i++;}  // if ready to send + exit loop if it gets stuck as it seems too
-    rf12_sendStart(0, &emonglcd, sizeof emonglcd);                      // send emonglcd data
-    rf12_sendWait(0);    
+    emonglcd.temperature = (int) (temp * 100);                       // set emonglcd payload  
+    rf12_recvDone();                                                 // Send current emonGLCD temperature using RFM12B sending code from JBecker http://openenergymonitor.org/emon/node/1051?page=2                               
+    if (rf12_canSend() )
+    
+     {
+        rf12_sendStart(0, &emonglcd, sizeof emonglcd);
+        rf12_sendWait(0);
+     }
   }
 }
