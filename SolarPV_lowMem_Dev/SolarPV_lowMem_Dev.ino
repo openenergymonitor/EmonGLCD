@@ -100,14 +100,15 @@ byte page = 1;
 #define ONE_WIRE_BUS 5              // temperature sensor connection - hard wired 
 OneWire oneWire(ONE_WIRE_BUS);
 DallasTemperature sensors(&oneWire);
-double temp, maxtemp,mintemp;
+double temp;
+int maxtemp,mintemp;                // Dont need the full resolution we only show full numbers 
 
 
 //-------------------------------------------------------------------------------------------- 
 // Flow control
 //-------------------------------------------------------------------------------------------- 
 unsigned long last_emontx;                   // Used to count time from last emontx update
-unsigned long last_emonbase;                   // Used to count time from last emontx update
+unsigned long last_emonbase;                 // Used to count time from last emontx update
 unsigned long fast_update, slow_update;
 
 //--------------------------------------------------------------------------------------------
@@ -115,7 +116,7 @@ unsigned long fast_update, slow_update;
 //--------------------------------------------------------------------------------------------
 void setup()
 {
-  Serial.begin(9600);
+  //Serial.begin(9600);                    // We are not using it.
   rf12_initialize(MYNODE, freq,group);
   glcd.begin(0x20);
   glcd.backLight(200);
@@ -195,8 +196,8 @@ void loop()
       glcd.refresh();
     
 
-    int LDR = analogRead(LDRpin);                     // Read the LDR Value so we can work out the light level in the room.
-    int LDRbacklight = map(LDR, 0, 1023, 50, 250);    // Map the data from the LDR from 0-1023 (Max seen 1000) to var GLCDbrightness min/max
+    //int LDR = analogRead(LDRpin);                     // Read the LDR Value so we can work out the light level in the room.
+    byte LDRbacklight = map(analogRead(LDRpin), 0, 1023, 50, 250);    // Map the data from the LDR from 0-1023 (Max seen 1000) to var GLCDbrightness min/max
     LDRbacklight = constrain(LDRbacklight, 0, 255);   // Constrain the value to make sure its a PWM value 0-255
     if ((hour > 22) ||  (hour < 5)) glcd.backLight(0); else glcd.backLight(LDRbacklight);  
 
