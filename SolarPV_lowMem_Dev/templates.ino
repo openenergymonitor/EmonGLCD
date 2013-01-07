@@ -38,7 +38,7 @@ void draw_power_page(char* powerstr, double powerval, char* energystr,  double e
 //------------------------------------------------------------------
 // Draws a footer showing GLCD temperature and the time
 //------------------------------------------------------------------
-void draw_temperature_time_footer(double temp, double mintemp, double maxtemp, double hour, double minute)
+void draw_temperature_time_footer(double temp, byte mintemp, byte maxtemp, byte hour, byte minute)
 {
   glcd.drawLine(0, 47, 128, 47, WHITE);     //middle horizontal line 
 
