@@ -180,7 +180,7 @@ void loop()
     }
    
     cval_gen = cval_gen + (emontx.power2 - cval_gen)*0.50;
-    genkwh += (emontx.power2 * 0.2) / 3600000;
+    genkwh += (emontx.power2 * .0000000556);                          //(emontx.power2 * 0.2) / 3600000;
     
     if (last_hour == 23 && hour == 00)       //start of a new day
     {  
@@ -196,10 +196,16 @@ void loop()
       glcd.refresh();
     
 
-    //int LDR = analogRead(LDRpin);                     // Read the LDR Value so we can work out the light level in the room.
-    byte LDRbacklight = map(analogRead(LDRpin), 0, 1023, 50, 250);    // Map the data from the LDR from 0-1023 (Max seen 1000) to var GLCDbrightness min/max
-    LDRbacklight = constrain(LDRbacklight, 0, 255);   // Constrain the value to make sure its a PWM value 0-255
-    if ((hour > 22) ||  (hour < 5)) glcd.backLight(0); else glcd.backLight(LDRbacklight);  
+   
+   if ((hour > 22) ||  (hour < 5)) 
+     glcd.backLight(0); 
+   else 
+   {
+     byte LDRbacklight = map(analogRead(LDRpin), 0, 1023, 50, 250);    // Read LDR light level from 0-1023 (Max seen 1000) to var GLCDbrightness min/max
+     LDRbacklight = constrain(LDRbacklight, 0, 255);   // Constrain the value to make sure its a PWM value 0-255
+     glcd.backLight(LDRbacklight);  
+     //int LDR = analogRead(LDRpin);                     // Read the LDR Value so we can work out the light level in the room.  
+   } 
 
     int PWRleds= map(cval_use-cval_gen, 0, maxgen, 0, 255);     // Map importing value from (LED brightness - cval3 is the smoothed grid value - see display above 
     if (PWRleds<0) PWRleds = PWRleds*-1;                        // keep it positive 
@@ -234,7 +240,6 @@ void loop()
     emonglcd.ldr = analogRead(LDRpin);                               // set emonglcd payload LDR
     rf12_recvDone();                                                 // Send current emonGLCD temperature using RFM12B sending code from JBecker http://openenergymonitor.org/emon/node/1051?page=2                               
     if (rf12_canSend() )
-    
      {
         rf12_sendStart(0, &emonglcd, sizeof emonglcd);
         rf12_sendWait(0);
