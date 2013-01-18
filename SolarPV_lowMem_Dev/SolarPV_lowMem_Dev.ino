@@ -226,7 +226,7 @@ void loop()
     }
   } 
   
-  if ((millis()-slow_update)>10000)
+  if ((millis()-slow_update)>17000)         //send temperature every 17s..choose a prime numeber to avoide transmissions becoming aligned
   {
     slow_update = millis();
 
