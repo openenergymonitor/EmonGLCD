@@ -55,7 +55,7 @@ RTC_Millis RTC;
 //--------------------------------------------------------------------------------------------
 // RFM12B Settings
 //--------------------------------------------------------------------------------------------
-#define MYNODE 20            // Should be unique on network, node ID 30 reserved for base station
+#define MYNODE 20            // Should be unique on network
 #define freq RF12_433MHZ     // frequency - match to same frequency as RFM12B module (change to 868Mhz or 915Mhz if appropriate)
 #define group 210            // network group, must be same as emonTx and emonBase
 
@@ -68,13 +68,16 @@ PayloadTX emontx;
 typedef struct { int temperature, ldr; } PayloadGLCD;
 PayloadGLCD emonglcd;
 
+const byte emonTxNodeID=10;         //emonTx node ID
+const byte emonBaseNodeID=15;       //Must be correct in-order for time to be received from emonBase
+
 //---------------------------------------------------
 // *emonGLCD SETUP*
 //---------------------------------------------------
 //#define emonGLCDV1.3               // un-comment if using older V1.3 emonGLCD PCB - enables required internal pull up resistors. Not needed for V1.4 onwards 
-const byte SolarPV_type=1;              // COMMENT OUT FOR TYPE 2 SOLAR PV - Select solar PV wiring type - Type 1 is when use and gen can be monitored seperatly. Type 2 is when gen and use can only be monitored together, see solar PV application documentation for more info
+const byte SolarPV_type=1;           // Select solar PV wiring type 1 or 2 - Type 1 is when use and gen can be monitored seperatly. Type 2 is when gen and use can only be monitored together, see solar PV application documentation for more info
 const int maxgen=3000;              // peak output of soalr PV system in W - used to calculate when to change cloud icon to a sun
-const byte PV_gen_offset=20;         // When generation drops below this level generation will be set to zero - used to force generation level to zero at night
+const byte PV_gen_offset=20;        // When generation drops below this level generation will be set to zero - used to force generation level to zero at night
 
 //----------------------HARDWARE SETUP----------------
 const byte greenLED=6;               // Green tri-color LED
@@ -146,9 +149,9 @@ void loop()
     if (rf12_crc == 0 && (rf12_hdr & RF12_HDR_CTL) == 0)  // and no rf errors
     {
       byte node_id = (rf12_hdr & 0x1F);
-      if (node_id == 10) {emontx = *(PayloadTX*) rf12_data; last_emontx = millis();}
+      if (node_id == emonTxNodeID) {emontx = *(PayloadTX*) rf12_data; last_emontx = millis();}
       
-      if (node_id == 15)
+      if (node_id == emonBaseNodeID) 
       {
         RTC.adjust(DateTime(2012, 1, 1, rf12_data[1], rf12_data[2], rf12_data[3]));
         last_emonbase = millis();
@@ -238,11 +241,9 @@ void loop()
    
     emonglcd.temperature = (int) (temp * 100);                       // set emonglcd payload  
     emonglcd.ldr = analogRead(LDRpin);                               // set emonglcd payload LDR
-    rf12_recvDone();                                                 // Send current emonGLCD temperature using RFM12B sending code from JBecker http://openenergymonitor.org/emon/node/1051?page=2                               
-    if (rf12_canSend() )
-     {
-        rf12_sendStart(0, &emonglcd, sizeof emonglcd);
-        rf12_sendWait(0);
-     }
+    
+    rf12_sendNow(0, &emonglcd, sizeof emonglcd);                     //send temperature data via RFM12B using new rf12_sendNow wrapper - https://github.com/jcw/jeelib/issues/33
+    rf12_sendWait(2);                                                // set the sync mode to 2 if the fuses are still the Arduino default
+                                                                     // mode 3 (full powerdown) can only be used with 258 CK startup fuses
   }
 }
