@@ -4,6 +4,7 @@
 #include "utility/font_clR4x6.h"
 #include "utility/font_clR6x8.h"
 
+/*
 //------------------------------------------------------------------
 // Draws a page showing a single power and energy value in big font
 //------------------------------------------------------------------
@@ -70,7 +71,7 @@ void draw_temperature_time_footer(double temp, double mintemp, double maxtemp, d
   glcd.setFont(font_helvB12);
   glcd.drawString(88,50,str);
 
-}
+}*/
 
 //------------------------------------------------------------------
 // Draws the Solar import/export page
@@ -254,7 +255,7 @@ void draw_solar_page(double use, double usekwh, double gen, double maxgen, doubl
   glcd.drawString(80,50,str);  
 
   glcd.refresh();     
-}
+}*/
 
 void draw_history_page(double genkwh[7], double usekwh[7])
 {
@@ -342,6 +343,6 @@ void draw_history_page(double genkwh[7], double usekwh[7])
   glcd.drawString(83,58,str);
   
   glcd.refresh();
-}*/
+}
 
 
