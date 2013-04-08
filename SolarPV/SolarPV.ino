@@ -262,7 +262,7 @@ void loop()
     if (temp < mintemp) mintemp = temp;
    
     emonglcd.temperature = (int) (temp * 100);                          // set emonglcd payload
-    rf12_sendNow(0, &emonglcd, sizeof emonglcd);                     //send temperature data via RFM12B using new rf12_sendNow wrapper - https://github.com/jcw/jeelib/issues/33
+    rf12_sendNow(0, &emonglcd, sizeof emonglcd);                     //send temperature data via RFM12B using new rf12_sendNow wrapper -glynhudson
     rf12_sendWait(2);    
   }
 }

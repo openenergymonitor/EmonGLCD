@@ -160,8 +160,7 @@ void loop()
     if (temp < mintemp) mintemp = temp;
    
     emonglcd.temperature = (int) (temp * 100);                          // set emonglcd payload
-    int i = 0; while (!rf12_canSend() && i<10) {rf12_recvDone(); i++;}  // if ready to send + exit loop if it gets stuck as it seems too
-    rf12_sendStart(0, &emonglcd, sizeof emonglcd);                      // send emonglcd data
-    rf12_sendWait(0);    
+    rf12_sendNow(0, &emonglcd, sizeof emonglcd);                     //send temperature data via RFM12B using new rf12_sendNow wrapper -glynhudson
+    rf12_sendWait(2);    
   }
 }
