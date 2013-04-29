@@ -90,8 +90,9 @@ unsigned long last_emonbase;                   // Used to count time from last e
 //--------------------------------------------------------------------------------------------
 void setup()
 {
-  Serial.begin(9600);
+  delay(500); 				   //wait for power to settle before firing up the RF
   rf12_initialize(MYNODE, freq,group);
+  delay(100);				   //wait for RF to settle befor turning on display
   glcd.begin(0x20);
   glcd.backLight(200);
   
@@ -115,9 +116,9 @@ void loop()
     if (rf12_crc == 0 && (rf12_hdr & RF12_HDR_CTL) == 0)  // and no rf errors
     {
       int node_id = (rf12_hdr & 0x1F);
-      if (node_id == 10) {emontx = *(PayloadTX*) rf12_data; last_emontx = millis();}
+      if (node_id == 10) {emontx = *(PayloadTX*) rf12_data; last_emontx = millis();}  //Assuming 10 is the emonTx NodeID
       
-      if (node_id == 15)
+      if (node_id == 15)			//Assuming 15 is the emonBase node ID
       {
         RTC.adjust(DateTime(2012, 1, 1, rf12_data[1], rf12_data[2], rf12_data[3]));
         last_emonbase = millis();
