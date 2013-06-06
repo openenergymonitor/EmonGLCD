@@ -139,7 +139,8 @@ void loop()
     minute = now.minute();
 
     usekwh += (emontx.power1 * 0.2) / 3600000;
-    cval_use = cval_use + (emontx.power1 - cval_use)*0.50;
+    if (last_hour == 23 && hour == 00) usekwh = 0;                //reset Kwh/d counter at midnight
+    cval_use = cval_use + (emontx.power1 - cval_use)*0.50;        //smooth transitions
     
     draw_power_page( "POWER" ,cval_use, "USE", usekwh);
     draw_temperature_time_footer(temp, mintemp, maxtemp, hour,minute);
