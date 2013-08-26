@@ -29,6 +29,8 @@ OneWire library: http://www.pjrc.com/teensy/td_libs_OneWire.html
 
 * **Tester:** simple sketch to test the function of the temperature sensor, light sensor and tri-colour LED's. Example can be used with or without the LCD and without the RFM12B. If LCD is connected results will be displayed on LCD. 
 
+* **GLCD_SSS** RF Signal Strength Meter and scanner for 464 or 868MHz bands by Martin Roberts: http://openenergymonitor.org/emon/node/2395
+
 # Template use
 
 ```c
