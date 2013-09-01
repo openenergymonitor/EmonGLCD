@@ -118,7 +118,7 @@ void setup()
   delay(500); 				   //wait for power to settle before firing up the RF
   rf12_initialize(MYNODE, freq,group);
   delay(100);				   //wait for RF to settle befor turning on display
-  glcd.begin(0x20);
+  glcd.begin(0x19);
   glcd.backLight(200);
   
   sensors.begin();                         // start up the DS18B20 temp sensor onboard  
