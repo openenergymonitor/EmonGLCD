@@ -71,7 +71,7 @@ PayloadTX emontx;
 typedef struct { int temperature; } PayloadGLCD;
 PayloadGLCD emonglcd;
 
-int hour = 0, minute = 0;
+int hour = 12, minute = 0;
 double usekwh = 0;
 
 const int greenLED=6;               // Green tri-color LED
