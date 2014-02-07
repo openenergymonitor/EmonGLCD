@@ -63,7 +63,7 @@ const int maxPower=8000;            //(8kW) Power level at which red LED is brig
 // RFM12B Settings
 //--------------------------------------------------------------------------------------------
 #define MYNODE 20            // Should be unique on network, node ID 30 reserved for base station
-#define freq RF12_433MHZ     // frequency - match to same frequency as RFM12B module (change to 868Mhz or 915Mhz if appropriate)
+#define RF_freq RF12_433MHZ     // frequency - match to same frequency as RFM12B module (change to 868Mhz or 915Mhz if appropriate)
 #define group 210            // network group, must be same as emonTx and emonBase
 
 //---------------------------------------------------
@@ -113,7 +113,7 @@ unsigned long fast_update;                   // Used to count time for fast 100m
 // Setup
 //--------------------------------------------------------------------------------------------
 void setup () {
-    rf12_initialize(MYNODE, freq,group);
+    rf12_initialize(MYNODE, RF_freq,group);
     
     glcd.begin(0x18);    //begin glcd library and set contrast 0x20 is max, 0x18 seems to look best on emonGLCD
     glcd.backLight(200); //max 255

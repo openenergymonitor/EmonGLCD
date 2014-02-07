@@ -51,7 +51,7 @@ RTC_Millis RTC;
 // RFM12B Settings
 //--------------------------------------------------------------------------------------------
 #define MYNODE 20            // Should be unique on network, node ID 30 reserved for base station
-#define freq RF12_433MHZ     // frequency - match to same frequency as RFM12B module (change to 868Mhz or 915Mhz if appropriate)
+#define RF_freq RF12_433MHZ     // frequency - match to same frequency as RFM12B module (change to 868Mhz or 915Mhz if appropriate)
 #define group 210 
 
 #define ONE_WIRE_BUS 5              // temperature sensor connection - hard wired 
@@ -91,7 +91,7 @@ unsigned long last_emonbase;                   // Used to count time from last e
 void setup()
 {
   delay(500); 				   //wait for power to settle before firing up the RF
-  rf12_initialize(MYNODE, freq,group);
+  rf12_initialize(MYNODE, RF_freq,group);
   delay(100);				   //wait for RF to settle befor turning on display
   glcd.begin(0x19);
   glcd.backLight(200);

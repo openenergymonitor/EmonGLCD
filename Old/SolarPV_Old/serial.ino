@@ -5,9 +5,9 @@ void print_glcd_setup()
   Serial.print("Node: "); 
   Serial.print(MYNODE); 
   Serial.print(" Freq: "); 
-  if (freq == RF12_433MHZ) Serial.print("433Mhz");
-  if (freq == RF12_868MHZ) Serial.print("868Mhz");
-  if (freq == RF12_915MHZ) Serial.print("915Mhz"); 
+  if (RF_freq == RF12_433MHZ) Serial.print("433Mhz");
+  if (RF_freq == RF12_868MHZ) Serial.print("868Mhz");
+  if (RF_freq == RF12_915MHZ) Serial.print("915Mhz"); 
   Serial.print(" Network: "); 
   Serial.println(group);
 }

@@ -56,7 +56,7 @@ RTC_Millis RTC;
 // RFM12B Settings
 //--------------------------------------------------------------------------------------------
 #define MYNODE 20            // Should be unique on network
-#define freq RF12_433MHZ     // frequency - match to same frequency as RFM12B module (change to 868Mhz or 915Mhz if appropriate)
+#define RF_freq RF12_433MHZ     // frequency - match to same frequency as RFM12B module (change to 868Mhz or 915Mhz if appropriate)
 #define group 210            // network group, must be same as emonTx and emonBase
 
 //---------------------------------------------------
@@ -120,7 +120,7 @@ unsigned long fast_update, slow_update;
 void setup()
 {
   //Serial.begin(9600);                    // We are not using it.
-  rf12_initialize(MYNODE, freq,group);
+  rf12_initialize(MYNODE, RF_freq,group);
   glcd.begin(0x20);
   glcd.backLight(200);
   
