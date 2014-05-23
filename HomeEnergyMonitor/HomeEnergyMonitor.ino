@@ -35,7 +35,8 @@
 //
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
-#include <JeeLib.h>
+#define RF69_COMPAT 0 // set to 1 to use RFM69CW 
+#include <JeeLib.h>   // make sure V12 (latest) is used if using RFM69CW
 #include <GLCD_ST7565.h>
 #include <avr/pgmspace.h>
 GLCD_ST7565 glcd;
