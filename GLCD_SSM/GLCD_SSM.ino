@@ -21,7 +21,7 @@ Version 1.01 05/06/13 - sleep_bod_disable macro added
 */
 
 #define VERSION "v1.01"
-
+#define RF69_COMPAT 0 // set to 1 to use RFM69CW 
 #include <JeeLib.h>       // https://github.com/jcw/jeelib (only needed because referenced by GLCDlib)
 #include <SPI.h>
 #include <GLCD_ST7565.h>  // https://github.com/jcw/glcdlib
