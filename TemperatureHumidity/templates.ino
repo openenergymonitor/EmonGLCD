@@ -10,25 +10,20 @@
 void draw_th_page(double temp, double mintemp, double maxtemp, double hum,double minhum,double maxhum,double hour, double minute, unsigned long last_emonbase,int nodeid)
 {
   
-  int MINTEMP = -15;
-  int MAXTEMP = 40;
+  int MINTEMP = -5;
+  int MAXTEMP = 35;
   byte imageindex;
-
-  int importing = 0;
-  
-  double grid = 0.;
   
   glcd.clear();
   glcd.fillRect(0,0,128,64,0);
   
   glcd.drawLine(66, 0, 66, 64, WHITE);      //top vertical line
-  //glcd.drawLine(0, 32, 128, 32, WHITE);     //middle horizontal line 
 
-  //variables to store conversion
+  //variables to store conversions
   char str[50];
   char str2[5];
 
-  // Last seen information from EmonBase/EmonPi
+  // Print time of last update from EmonBase/EmonPi (need RTC on emonBase)
 
 //  if ((millis()-last_emonbase)>12000)
 //  {
@@ -101,7 +96,7 @@ void draw_th_page(double temp, double mintemp, double maxtemp, double hum,double
   strcat(str,str2); 
   glcd.drawString(28,58,str); 
 
-  // Print Node ID for reference
+  // Print Node ID to display for reference
   itoa((int)nodeid,str,10);
   strcat(str,"N"); 
   glcd.drawString(69,58,str);
