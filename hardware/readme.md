@@ -10,21 +10,22 @@ The emonGLCD has an on-board temperate sensor, light sensor and two tri-color am
 Based on JeeLabs.org design.
 
 
-[http://openenergymonitor.org/emon/emonglcd]([http://openenergymonitor.org/emon/emonglcd])
-
-
 [http://shop.openenergymonitor.com/displays/](http://shop.openenergymonitor.com/displays/)
 
 
 ![photo.jpg](photo.jpg)
 
-### Eagle schematic and board file
+### Port map
 
-Download both the schematic and board file and open in eagle, click on File > Switch to Board to navigate between schematic view and PCB Board view.
+|         |                   |         |
+|---|---|---|
+|Function|emonGLCD V1.2 (old)|emonGLCD V1.3+|
+|Push button(s)|Dig15 / ADC|Dig 15 (enter), dig 16 (up) and dig 19 (down) - requires software pull-up, active low (V1.3 only). Blog post|
+|Temperature sensor|Dig 5|Dig 5|
+|LDR light sensor|ADC0 – see V1.2 bugs page|ADC4|
+|Tri-color LED Red|Dig 9 – PWM|Dig 9 – PWM|
+|Tri-colour LCD Green|Dig 8|Dig 6 – PWM|
 
-- Schematic: [emonGLCD_V1.5.sch](emonGLCD_V1.5.sch)
-- Board: [emonGLCD_V1.5.brd](emonGLCD_V1.5.brd)
-- BOM: [bom.json](bom.json)
 
 
 ### Schematic
@@ -38,6 +39,41 @@ Download both the schematic and board file and open in eagle, click on File > Sw
 ![board.png](board.png)
 
 
+## Enclosure
+
+- [emonGLCD Fascia CAD design is up on Thingiverse](http://www.thingiverse.com/thing:22295)
+- [User contributed 3D printed case](https://openenergymonitor.org/emon/node/12290)
+
+## Errata
+
+**The v1.4 PCB contains a track error, rendering the spare Digital IO pin on the JeePort unusable. It can be fixed by cutting a PCB trace. See  this for details.**
+
+***
+
+### Hardware revision history
+
+#### V1.2:
+
+* First release
+
+#### V1.3:
+
+* LDR moved to ADC4,
+* LED from Dig 8 to Dig 6 to be on PWM output
+* Added two extra push buttons for menu navigation (Dig 16 and Dig19) - don't work. Update: they do work!
+* Connected backlight directly to IRQ PWM
+* Added two additional menu selection buttons to make three in total
+
+#### V1.4:
+
+* Fixed switches connections
+* Connected LCD to 3.3V instead of 5V
+* External power connection now routed through voltage reg - accepts input from 5-12V
+
+#### V1.5:
+
+* Corrected orientation of C13 and C14, this fixed issue of LCD contrast fading
+* 12/03/13 - Fix Dig 8 and Dig 6 short and silkscreen error on JeePort3: https://openenergymonitor.org/emon/node/2063
 
 ### Open Hardware
 
