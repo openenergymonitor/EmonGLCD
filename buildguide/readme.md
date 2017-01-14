@@ -63,7 +63,7 @@ Here are all the components required to build your emonGLCD:
 *   Case + Spacers + Screws
 
 
-![](1b.JPG)
+![](1b.png)
 
 
 ## Step 2 - 10k Resistors
@@ -74,7 +74,7 @@ First we add the 5x 10k resistors - their colour code is: Brown, Black, Orange, 
 
 For emonGLCD V1.4 / V1.5:
 
-![](2.JPG)
+![](2.jpg)
 
 
 Note: all other photos in this build guide will refer to emonGLCD V1.3\. There are only a few minor changes between the two versions. See [this blog post](http://blog.openenergymonitor.org/2012/07/emonglcd-v14/) for details.
