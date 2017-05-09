@@ -292,9 +292,11 @@ Here is the completed unit running the emonGLCD Tester sketch, see next step for
 
 The ATmega328 will come with Arduino Optiboot 4.4 bootloader (select Uno under tools>boards in Arduino IDE) but with no sketch uploaded. The correct sketch must be uploaded using Arduino IDE.
 
-emonGLCD Arduino firmware can be downloaded from: [https://github.com/openenergymonitor/emonGLCD](https://github.com/openenergymonitor/emonGLCD) see github readme for Arduino library instructions and firmware details.
+emonGLCD Arduino firmware can be downloaded from: [https://github.com/openenergymonitor/emonGLCD](https://github.com/openenergymonitor/emonGLCD) see github readme in the firmware folder for Arduino library instructions and firmware details.
 
-For instructions on how to upload firmware see the top of the [building blocks](http://openenergymonitor.org/emon/buildingblocks) page.
+*Note: Set #define RF69_COMPAT 1 at the top of the firmware examples if your using the RFM69 module*
+
+For instructions on how to upload firmware using PlatformIO see []'Compiling' of the User Guide](https://guide.openenergymonitor.org/technical/compiling)
 
 ## emonBase Setup
 
