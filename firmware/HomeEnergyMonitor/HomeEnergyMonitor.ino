@@ -6,7 +6,7 @@
 
 // emonGLCD documentation http://openEnergyMonitor.org/emon/emonglcd
 
-// RTC to reset Kwh counters at midnight is implemented is software. 
+// RTC to reset Kwh counters at midnight is implemented is software.
 // Correct time is updated via NanodeRF which gets time from internet
 // Temperature recorded on the emonglcd is also sent to the NanodeRF for online graphing
 
@@ -35,7 +35,7 @@
 //
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
-#define RF69_COMPAT 0 // set to 1 to use RFM69CW 
+#define RF69_COMPAT 1 // set to 1 to use RFM69CW 
 #include <JeeLib.h>   // make sure V12 (latest) is used if using RFM69CW
 #include <GLCD_ST7565.h>
 #include <avr/pgmspace.h>
@@ -53,9 +53,9 @@ RTC_Millis RTC;
 //--------------------------------------------------------------------------------------------
 #define MYNODE 20            // Should be unique on network, node ID 30 reserved for base station
 #define RF_freq RF12_433MHZ     // frequency - match to same frequency as RFM12B module (change to 868Mhz or 915Mhz if appropriate)
-#define group 210 
+#define group 210
 
-#define ONE_WIRE_BUS 5              // temperature sensor connection - hard wired 
+#define ONE_WIRE_BUS 5              // temperature sensor connection - hard wired
 
 unsigned long fast_update, slow_update;
 
@@ -77,12 +77,12 @@ double usekwh = 0;
 
 const int greenLED=6;               // Green tri-color LED
 const int redLED=9;                 // Red tri-color LED
-const int LDRpin=4;    		    // analog pin of onboard lightsensor 
+const int LDRpin=4;    		    // analog pin of onboard lightsensor
 int cval_use;
 
-//-------------------------------------------------------------------------------------------- 
+//--------------------------------------------------------------------------------------------
 // Flow control
-//-------------------------------------------------------------------------------------------- 
+//--------------------------------------------------------------------------------------------
 unsigned long last_emontx;                   // Used to count time from last emontx update
 unsigned long last_emonbase;                   // Used to count time from last emontx update
 
@@ -96,14 +96,14 @@ void setup()
   delay(100);				   //wait for RF to settle befor turning on display
   glcd.begin(0x19);
   glcd.backLight(200);
-  
-  sensors.begin();                         // start up the DS18B20 temp sensor onboard  
+
+  sensors.begin();                         // start up the DS18B20 temp sensor onboard
   sensors.requestTemperatures();
   temp = (sensors.getTempCByIndex(0));     // get inital temperture reading
   mintemp = temp; maxtemp = temp;          // reset min and max
 
-  pinMode(greenLED, OUTPUT); 
-  pinMode(redLED, OUTPUT); 
+  pinMode(greenLED, OUTPUT);
+  pinMode(redLED, OUTPUT);
 }
 
 //--------------------------------------------------------------------------------------------
@@ -111,19 +111,19 @@ void setup()
 //--------------------------------------------------------------------------------------------
 void loop()
 {
-  
+
   if (rf12_recvDone())
   {
     if (rf12_crc == 0 && (rf12_hdr & RF12_HDR_CTL) == 0)  // and no rf errors
     {
       int node_id = (rf12_hdr & 0x1F);
       if (node_id == 10) {emontx = *(PayloadTX*) rf12_data; last_emontx = millis();}  //Assuming 10 is the emonTx NodeID
-      
+
       if (node_id == 15)			//Assuming 15 is the emonBase node ID
       {
         RTC.adjust(DateTime(2012, 1, 1, rf12_data[1], rf12_data[2], rf12_data[3]));
         last_emonbase = millis();
-      } 
+      }
     }
   }
 
@@ -133,7 +133,7 @@ void loop()
   if ((millis()-fast_update)>200)
   {
     fast_update = millis();
-    
+
     DateTime now = RTC.now();
     int last_hour = hour;
     hour = now.hour();
@@ -142,7 +142,7 @@ void loop()
     usekwh += (emontx.power1 * 0.2) / 3600000;
     if (last_hour == 23 && hour == 00) usekwh = 0;                //reset Kwh/d counter at midnight
     cval_use = cval_use + (emontx.power1 - cval_use)*0.50;        //smooth transitions
-    
+
     draw_power_page( "POWER" ,cval_use, "USE", usekwh);
     draw_temperature_time_footer(temp, mintemp, maxtemp, hour,minute);
     glcd.refresh();
@@ -150,9 +150,9 @@ void loop()
     int LDR = analogRead(LDRpin);                     // Read the LDR Value so we can work out the light level in the room.
     int LDRbacklight = map(LDR, 0, 1023, 50, 250);    // Map the data from the LDR from 0-1023 (Max seen 1000) to var GLCDbrightness min/max
     LDRbacklight = constrain(LDRbacklight, 0, 255);   // Constrain the value to make sure its a PWM value 0-255
-    if ((hour > 22) ||  (hour < 5)) glcd.backLight(0); else glcd.backLight(LDRbacklight);  
-  } 
-  
+    if ((hour > 22) ||  (hour < 5)) glcd.backLight(0); else glcd.backLight(LDRbacklight);
+  }
+
   if ((millis()-slow_update)>10000)
   {
     slow_update = millis();
@@ -161,9 +161,9 @@ void loop()
     temp = (sensors.getTempCByIndex(0));
     if (temp > maxtemp) maxtemp = temp;
     if (temp < mintemp) mintemp = temp;
-   
+
     emonglcd.temperature = (int) (temp * 100);                          // set emonglcd payload
     rf12_sendNow(0, &emonglcd, sizeof emonglcd);                     //send temperature data via RFM12B using new rf12_sendNow wrapper -glynhudson
-    rf12_sendWait(2);    
+    rf12_sendWait(2);
   }
 }
