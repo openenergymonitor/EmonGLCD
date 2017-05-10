@@ -9,18 +9,18 @@
 
   Part of the: openenergymonitor.org project
   Licenced under GNU GPL V3
-  
-*/ 
-#define RF69_COMPAT 0 // set to 1 to use RFM69CW 
+
+*/
+#define RF69_COMPAT 1 // set to 1 to use RFM69CW 
 #include <JeeLib.h>
 #include <GLCD_ST7565.h>
 #include <avr/pgmspace.h>
 #include <DHT.h>
-#include <RTClib.h>                 // Real time clock (RTC) - used for software RTC 
+#include <RTClib.h>                 // Real time clock (RTC) - used for software RTC
 #include <Wire.h>                   // Part of Arduino libraries - needed for RTClib
 
 #define DHTPIN 5                    //DHT sensor is on Dig Pin 5
-#define DHTTYPE DHT22               
+#define DHTTYPE DHT22
 
 RTC_Millis RTC;
 
@@ -28,7 +28,7 @@ GLCD_ST7565 glcd;
 DHT dht(DHTPIN, DHTTYPE);
 
 unsigned long fast_update,slow_update;
-const int LDRpin=4;            // analog (ADC) pin of onboard lightsensor 
+const int LDRpin=4;            // analog (ADC) pin of onboard lightsensor
 
 
 //--------------------------------------------------------------------------------------------
@@ -37,23 +37,23 @@ const int LDRpin=4;            // analog (ADC) pin of onboard lightsensor
 #define MYNODE 29            // Should be unique on network, node ID 30 reserved for base station
 #define BASENODE 5
 #define RF_freq RF12_868MHZ     // frequency - match to same frequency as RFM12B module (change to 868Mhz or 915Mhz if appropriate)
-#define group 210 
+#define group 210
 
 //---------------------------------------------------
 // Data structures for TX
 //---------------------------------------------------
 
-typedef struct { 
-  int temperature; 
-  int humidity; 
+typedef struct {
+  int temperature;
+  int humidity;
   int ldr;
 } PayloadGLCDTH;
 
 PayloadGLCDTH emonglcd;
 
-//-------------------------------------------------------------------------------------------- 
+//--------------------------------------------------------------------------------------------
 // Flow control
-//-------------------------------------------------------------------------------------------- 
+//--------------------------------------------------------------------------------------------
 unsigned long last_emontx;                   // Used to count time from last emontx update (not used)
 unsigned long last_emonbase;                   // Used to count time from last emonbase update
 
@@ -77,11 +77,11 @@ void setup()
   hum = dht.readHumidity();
   minhum=hum;
   maxhum=hum;
-  
+
   temp = dht.readTemperature();
   mintemp=temp;
   maxtemp=temp;
-  
+
 }
 
 void loop()
@@ -92,12 +92,12 @@ void loop()
     if (rf12_crc == 0 && (rf12_hdr & RF12_HDR_CTL) == 0)  // and no rf errors
     {
       int node_id = (rf12_hdr & 0x1F);
-      
-      if (node_id == BASENODE)      
+
+      if (node_id == BASENODE)
       {
         RTC.adjust(DateTime(2012, 1, 1, rf12_data[1], rf12_data[2], rf12_data[3]));
         last_emonbase = millis();
-      } 
+      }
     }
   }
 
@@ -118,7 +118,7 @@ void loop()
     LDRbacklight = constrain(LDRbacklight, 0, 255);   // Constrain the value to make sure its a PWM value 0-255
     //if ((hour > 22) ||  (hour < 5)) glcd.backLight(0); else     // Turn off backlight during night hours...
     glcd.backLight(255-LDRbacklight);            // NOTE this inversion to increase backlight when light levels low...
-  
+
     hum = dht.readHumidity();                    // Read humidity from DHT
     temp = dht.readTemperature();                // Read temperature from DHT
 
@@ -131,7 +131,7 @@ void loop()
       // temp,mintemp,maxtemp,hum,minhum,maxhum,hour,minute,last_emonbase,node id
       draw_th_page(temp,mintemp,maxtemp,hum,minhum,maxhum,hour,minute,last_emonbase,MYNODE);
       glcd.refresh();
-  } 
+  }
 
   if ((millis()-slow_update)>10000)
   {
@@ -151,11 +151,11 @@ void loop()
     glcd.refresh();
 
     // Set TX payload to base station
-    emonglcd.temperature = (int) (temp * 100);                          
+    emonglcd.temperature = (int) (temp * 100);
     emonglcd.humidity = (int) (hum * 100);
     emonglcd.ldr=(int)LDR;
     // Send TX payload to base station
-    rf12_sendNow(0, &emonglcd, sizeof emonglcd);                     
-    rf12_sendWait(2);    
+    rf12_sendNow(0, &emonglcd, sizeof emonglcd);
+    rf12_sendWait(2);
   }
 }

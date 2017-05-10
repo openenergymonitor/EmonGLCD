@@ -114,7 +114,7 @@ _(If in any doubt, check the PCB version number on the top edge of the board abo
 
 All other capacitors should be inserted the correct way as marked on the PCB.
 
-![](7.JPG)
+![](7.jpg)
 
 ## Step 8 - 16MHz Crystal
 
@@ -213,8 +213,6 @@ https://www.youtube.com/watch?v=YMlDqEKnQYQ
 
 After following that, it should look like this:
 
-![](20.JPG)
-
 ![](20a.JPG)
 
 ![](20b.JPG)
@@ -225,11 +223,14 @@ After following that, it should look like this:
 
 You should now test the LCD display before soldering it as it is very hard to de-solder later if something is wrong. This video explains the process:
 
+[https://www.youtube.com/watch?v=AN78HUO_Eg8](https://www.youtube.com/watch?v=AN78HUO_Eg8)
+
+
 The ATMega will come with Arduino Optiboot 4.4 bootloader (select Uno in IDE) but with no sketch uploaded. The correct sketch must be uploaded using Arduino IDE. You should use [this sketch](https://github.com/openenergymonitor/EmonGLCD/tree/master/tester) to test with.
 
 It's also a good idea to test the LED backlight to check you have the polarity the correct way (long leg to +) before soldering.
 
-## Step 22 - LCD Display
+## Step 22 - LCD Display Position
 
 We are now ready to fit the LCD Display.
 
@@ -242,9 +243,9 @@ Next, we need to fit the front of the case. Take the plastic spacers and use the
 
 This video will help guide you through getting the display in position:
 
-[https://www.youtube.com/watch?v=YMlDqEKnQYQ](https://www.youtube.com/watch?v=YMlDqEKnQYQ)
+[https://www.youtube.com/watch?v=969oFOiuSsY]https://www.youtube.com/watch?v=969oFOiuSsY)
 
-## Step 23 - LCD Display
+## Step 23 - LCD Display Solder
 
 Once you have the display in the correct position (just resting very lightly on the backlight), we need to solder it in place. Solder a just a few pins at first, check it's level and aligned and then solder the remaining pins.
 
@@ -291,9 +292,11 @@ Here is the completed unit running the emonGLCD Tester sketch, see next step for
 
 The ATmega328 will come with Arduino Optiboot 4.4 bootloader (select Uno under tools>boards in Arduino IDE) but with no sketch uploaded. The correct sketch must be uploaded using Arduino IDE.
 
-emonGLCD Arduino firmware can be downloaded from: [https://github.com/openenergymonitor/emonGLCD](https://github.com/openenergymonitor/emonGLCD) see github readme for Arduino library instructions and firmware details.
+emonGLCD Arduino firmware can be downloaded from: [https://github.com/openenergymonitor/emonGLCD](https://github.com/openenergymonitor/emonGLCD) see github readme in the firmware folder for Arduino library instructions and firmware details.
 
-For instructions on how to upload firmware see the top of the [building blocks](http://openenergymonitor.org/emon/buildingblocks) page.
+*Note: Set #define RF69_COMPAT 1 at the top of the firmware examples if your using the RFM69 module*
+
+For instructions on how to upload firmware using PlatformIO see []'Compiling' of the User Guide](https://guide.openenergymonitor.org/technical/compiling)
 
 ## emonBase Setup
 
@@ -357,5 +360,4 @@ And finally If the Pi is connected to the internet you can also force Debians cl
 ```
 sudo /etc/init.d/ntp stop && sudo ntpd -q -g && sudo /etc/init.d/ntp start
 ```
-
 
