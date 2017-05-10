@@ -54,7 +54,7 @@ Here are all the components required to build your emonGLCD:
 *   1x 16MHz Crystal - for the ATMega328.
 *   1x USB Mini B Socket
 *   1x Microchip MCP1702 3.3v Voltage Regulator
-*   1x Bi-Colour LED's
+*   2x Bi-Colour LED's
 *   1x 6-way header
 *   1x DS18B20 Digital Thermometer
 *   1x Light Dependant Resistor
@@ -323,3 +323,41 @@ frequency = 433
 baseid = 15
 sendtimeinterval = 60
 ```
+
+## Time synchronization
+
+By default emonHub is using a UTC timezone, meaning that GLCD might not display the timezone correctly, to configure your Local timezone you might need to run super user mode (meaning you should be careful with what you type from now on)
+
+```
+sudo su
+```
+
+It will ask for a password, its the same used for SSH login to emonHUB
+
+Enable rewrite and run the command to reconfigure the timezone
+
+```
+rpi-rw
+dpkg-reconfigure tzdata
+```
+
+This way all the timezones will appear on the SSH screen so you can select the one you are at
+
+
+![](27.jpg)
+
+
+After you select your specific continent/country, the system will notify you that now there is 2 time zones, Local time (CDT) and Universal time (UTC), do a reboot to emonHub with the command
+
+```
+sudo reboot
+```
+
+After a reboot to GLCD (unplug it and replug it) it will show your CDT (local time) correctly
+
+And finally If the Pi is connected to the internet you can also force Debians clock to synchronize with the command
+
+```
+sudo /etc/init.d/ntp stop && sudo ntpd -q -g && sudo /etc/init.d/ntp start
+```
+
