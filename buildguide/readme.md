@@ -323,7 +323,7 @@ sendtimeinterval = 60
 
 ## Time synchronization
 
-By default emonHub is using a UTC timezone, meaning that GLCD might not display the timezone correctly to configure your Local timezone you might need to run super user mode (meaning you should be careful with what you type from now on)
+By default emonHub is using a UTC timezone, meaning that GLCD might not display the timezone correctly, to configure your Local timezone you might need to run super user mode (meaning you should be careful with what you type from now on)
 
 ```
 sudo su
@@ -353,3 +353,9 @@ sudo reboot
 After a reboot to GLCD (unplug it and replug it) it will show your CDT (local time) correctly
 
 And finally If the Pi is connected to the internet you can also force Debians clock to synchronize with the command
+
+```
+sudo /etc/init.d/ntp stop && sudo ntpd -q -g && sudo /etc/init.d/ntp start
+```
+
+
