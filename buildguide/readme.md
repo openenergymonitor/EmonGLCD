@@ -321,7 +321,7 @@ baseid = 15
 sendtimeinterval = 60
 ```
 
-##Time synchronization
+## Time synchronization
 
 By default emonHub is using a UTC timezone, meaning that GLCD might not display the timezone correctly to configure your Local timezone you might need to run super user mode (meaning you should be careful with what you type from now on)
 
