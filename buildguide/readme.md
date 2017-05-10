@@ -321,15 +321,15 @@ baseid = 15
 sendtimeinterval = 60
 ```
 
-## Time syncronization 
+##Time synchronization
 
-By default emonHub is using a UTC timezone, meaning that GLCD might not display the timezone correctly to configure your Local timezone you might need to run super user mode (meaning you should be carefull with what you type from now on)
+By default emonHub is using a UTC timezone, meaning that GLCD might not display the timezone correctly to configure your Local timezone you might need to run super user mode (meaning you should be careful with what you type from now on)
 
 ```
 sudo su
 ```
 
-It will ask for a password, its the same used for SSH login to emonHUB 
+It will ask for a password, its the same used for SSH login to emonHUB
 
 Enable rewrite and run the command to reconfigure the timezone
 
@@ -337,20 +337,19 @@ Enable rewrite and run the command to reconfigure the timezone
 rpi-rw
 dpkg-reconfigure tzdata
 ```
+
 This way all the timezones will appear on the SSH screen so you can select the one you are at
 
-![](27.JPG)
 
-After you select your especific continent/coountry, the system will notify you that now there is 2 time zones, Local time (CDT) and Universal time (UTC), do a reboot to emonHub with the command 
+![](27.jpg)
+
+
+After you select your specific continent/country, the system will notify you that now there is 2 time zones, Local time (CDT) and Universal time (UTC), do a reboot to emonHub with the command
 
 ```
 sudo reboot
 ```
 
-After a reboot  to GLCD (unplug it and replug it) it will show your CDT (local time) correctly
+After a reboot to GLCD (unplug it and replug it) it will show your CDT (local time) correctly
 
 And finally If the Pi is connected to the internet you can also force Debians clock to synchronize with the command
-
-```
-sudo /etc/init.d/ntp stop && sudo ntpd -q -g && sudo /etc/init.d/ntp start
-```
