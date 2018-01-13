@@ -24,9 +24,9 @@
 #include <DallasTemperature.h>      // http://download.milesburton.com/Arduino/MaximTemperature/ (3.7.2 Beta needed for Arduino 1.0)
 
 //JeeLab libraires		       http://github.com/jcw
-#define RF69_COMPAT 1 // set to 1 to use RFM69CW 
-#include <JeeLib.h>   // make sure V12 (latest) is used if using RFM69CW
-#include <JeeLib.h>		    // ports and RFM12 - used for RFM12B wireless
+//#define RF69_COMPAT 1 // set to 1 to use RFM69CW 
+//#include <JeeLib.h>   // make sure V12 (latest) is used if using RFM69CW
+//#include <JeeLib.h>		    // ports and RFM12 - used for RFM12B wireless
 
 #include <GLCD_ST7565.h>            // Graphical LCD library
 #include <avr/pgmspace.h>           // Part of Arduino libraries - needed for GLCD lib
