@@ -180,9 +180,9 @@ We now need to check the voltage is correct before we add any of the expensive c
 ![](16.JPG)
 
 
-## Step 17 - RFM12B
+## Step 17 - RFM12B / RFM69CW
 
-Add the RFM12B module. You can see the shapes of the crystal on the PCB. Position the module in place over the pads and gently apply heat and solder the opposite corners to hold it in place so you can solder the remaining pads.
+Add the RFM12B / RFMc9CW module. You can see the shapes of the crystal on the PCB. Position the module in place over the pads and gently apply heat and solder the opposite corners to hold it in place so you can solder the remaining pads.
 
 <u>NOTE</u> The RFM69CW module is different. Ignore the printed footprint and carefully check the orientation before soldering. All the very small surface-mount components should be in the bottom-right corner, the gold dot on the RFM69CW chip should be top-right.
 
@@ -240,6 +240,7 @@ Next, we need to fit the front of the case. Take the plastic spacers and use the
 
 ![](22.JPG)
 
+It's possible to use 4x shorter spacers instead of two larger ones. 
 
 This video will help guide you through getting the display in position:
 
