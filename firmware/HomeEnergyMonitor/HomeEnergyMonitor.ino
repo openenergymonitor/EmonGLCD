@@ -26,8 +26,8 @@
 //	- DallasTemperature	http://download.milesburton.com/Arduino/MaximTemperature
 //                           or https://github.com/milesburton/Arduino-Temperature-Control-Library
 //	- JeeLib		https://github.com/jcw/jeelib
-//	- RTClib		https://github.com/jcw/rtclib
-//	- GLCD_ST7565		https://github.com/jcw/glcdlib
+//	- RTClib		https://github.com/adafruit/RTClib
+//	- GLCD_ST7565		https://github.com/openenergymonitor/glcdlib
 //
 // Other files in project directory (should appear in the arduino tabs above)
 //	- icons.ino
