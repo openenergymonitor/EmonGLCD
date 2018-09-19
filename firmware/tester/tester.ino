@@ -17,7 +17,7 @@
 //                           or https://github.com/milesburton/Arduino-Temperature-Control-Library
 
 //	- JeeLib		https://github.com/jcw/jeelib
-//	- GLCD_ST7565		https://github.com/jcw/glcdlib
+//	- GLCD_ST7565		https://github.com/openenergymonitor/glcdlib
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 #include <OneWire.h>		    // http://www.pjrc.com/teensy/td_libs_OneWire.html
