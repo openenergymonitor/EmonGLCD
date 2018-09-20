@@ -226,7 +226,7 @@ You should now test the LCD display before soldering it as it is very hard to de
 [https://www.youtube.com/watch?v=AN78HUO_Eg8](https://www.youtube.com/watch?v=AN78HUO_Eg8)
 
 
-The ATMega will come with Arduino Optiboot 4.4 bootloader (select Uno in IDE) but with no sketch uploaded. The correct sketch must be uploaded using Arduino IDE. You should use [this sketch](https://github.com/openenergymonitor/EmonGLCD/tree/master/firmware/tester) to test with.
+The ATMega will come with Arduino Optiboot 4.4 bootloader (select Uno in IDE) but with no sketch uploaded. The correct sketch must be uploaded using Arduino IDE. You should use [this sketch](https://github.com/openenergymonitor/EmonGLCD/blob/master/firmware/tester/tester.ino) to test with.
 
 It's also a good idea to test the LED backlight to check you have the polarity the correct way (long leg to +) before soldering.
 
