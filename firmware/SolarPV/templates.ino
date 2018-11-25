@@ -4,7 +4,7 @@
 #include "utility/font_clR4x6.h"
 #include "utility/font_clR6x8.h"
 
-/*
+
 //------------------------------------------------------------------
 // Draws a page showing a single power and energy value in big font
 //------------------------------------------------------------------
@@ -16,7 +16,7 @@ void draw_power_page(char* powerstr, double powerval, char* energystr,  double e
   char str[50];    			 //variable to store conversion 
   glcd.setFont(font_clR6x8);      
   strcpy(str,powerstr);  
-  strcat(str," NOW:"); 
+  strcat(str," now:"); 
   glcd.drawString(0,0,str);
   strcpy(str,energystr);  
   strcat(str," TODAY:"); 
@@ -65,13 +65,13 @@ void draw_temperature_time_footer(double temp, double mintemp, double maxtemp, d
   // Time
   char str2[5];
   itoa((int)hour,str,10);
-  if  (minute<10) strcat(str,":0"); else strcat(str,":");
+  if  (minute<10) strcat(str,": 0"); else strcat(str,": ");
   itoa((int)minute,str2,10);
   strcat(str,str2); 
   glcd.setFont(font_helvB12);
   glcd.drawString(88,50,str);
 
-}*/
+}
 
 //------------------------------------------------------------------
 // Draws the Solar import/export page
@@ -98,7 +98,7 @@ void draw_solar_page(double use, double usekwh, double gen, double maxgen, doubl
   char str2[5];
 
   // Last seen information from EmonTX
-  if ((millis()-last_emontx)>20000)
+  if ((millis()-last_emontx)>120000)
   {
     // small font
     glcd.setFont(font_clR4x6);
@@ -112,7 +112,7 @@ void draw_solar_page(double use, double usekwh, double gen, double maxgen, doubl
       glcd.drawString(66,0,PSTR("TxFail"));
     
   }
-  if ((millis()-last_emonbase)>120000)
+  if ((millis()-last_emonbase)>180000)
   {
     // small font
     glcd.setFont(font_clR4x6);

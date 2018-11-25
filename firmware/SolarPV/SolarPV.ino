@@ -12,7 +12,7 @@
 // Temperature recorded on the emonglcd is also sent to the NanodeRF for online graphing
 
 // this sketch is currently setup for type 1 solar PV monitoring where CT's monitor generation and consumption separately
-// The sketch assumes emonx.power1 is consuming/grid power and emontx.power2 is solarPV generation
+// The sketch assumes emonx.utility is consuming/grid power and emontx.solarW is solarPV generation
 // to use this sketch for type 2 solar PV monitoring where CT's monitor consumption and grid import/export using an AC-AC adapter to detect current flow direction
 // change type to '2' on emonGLCD setup section below.
 
@@ -44,7 +44,6 @@
 #define RF69_COMPAT 1 // set to 1 to use RFM69CW 
 #include <JeeLib.h>   // make sure V12 (latest) is used if using RFM69CW
 
-#include <JeeLib.h>
 #include <GLCD_ST7565.h>
 #include <avr/pgmspace.h>
 GLCD_ST7565 glcd;
@@ -61,14 +60,33 @@ RTC_Millis RTC;
 #define MYNODE 20            // Should be unique on network, node ID 30 reserved for base station
 #define RF_freq RF12_433MHZ     // frequency - match to same frequency as RFM12B module (change to 868Mhz or 915Mhz if appropriate)
 #define group 210            // network group, must be same as emonTx and emonBase
+#define EMONPI 5            //id of EMONPI base (where transmissions come from)
+#undef  EMONTX             //if sniffing EMONTX data, set this to id of EMONTX, else undef and then expect data from EMONPI 
+
+
 
 //---------------------------------------------------
 // Data structures for transfering data between units
 //---------------------------------------------------
-typedef struct { int power1, power2, power3, Vrms; } PayloadTX;         // neat way of packaging data for RF comms
+#ifdef EMONTX
+typedef struct { 
+  //power1 = utilityW, power2 = solarW , other struct members we don't care about
+  int utilityW, solarW, power3, Vrms; 
+} PayloadTX;         // neat way of packaging data for RF comms
+#else 
+typedef struct {
+  byte nodeId ;
+  byte hour, min, sec ;
+  int utilityW, solarW, utilityKwh, solarKwh;
+} PayloadTX;         // neat way of packaging data for RF comms
+#endif
+
 PayloadTX emontx;
 
-typedef struct { int temperature; } PayloadGLCD;
+
+typedef struct {
+  int temperature;
+} PayloadGLCD;
 PayloadGLCD emonglcd;
 
 //---------------------------------------------------
@@ -76,15 +94,15 @@ PayloadGLCD emonglcd;
 //---------------------------------------------------
 //#define emonGLCDV1.3               // un-comment if using older V1.3 emonGLCD PCB - enables required internal pull up resistors. Not needed for V1.4 onwards
 const int SolarPV_type=1;            // Select solar PV wiring type - Type 1 is when use and gen can be monitored seperatly. Type 2 is when gen and use can only be monitored together, see solar PV application documentation for more info
-const int maxgen=3000;              // peak output of soalr PV system in W - used to calculate when to change cloud icon to a sun
-const int PV_gen_offset=50;         // When generation drops below this level generation will be set to zero - used to force generation level to zero at night
+const int maxgen=5900;              // peak output of soalr PV system in W - used to calculate when to change cloud icon to a sun
+const int PV_gen_offset=5;         // When generation drops below this level generation will be set to zero - used to force generation level to zero at night
 
-const int greenLED=6;               // Green tri-color LED
-const int redLED=9;                 // Red tri-color LED
-const int LDRpin=4;    		    // analog pin of onboard lightsensor
-const int switch1=15;               // Push switch digital pins (active low for V1.3, active high for V1.4)
-const int switch2=16;
-const int switch3=19;
+const int greenLED = 6;             // Green tri-color LED
+const int redLED = 9;               // Red tri-color LED
+const int LDRpin = 4;    		  // analog pin of onboard lightsensor
+const int switch1 = 15;             // Push switch digital pins (active low for V1.3, active high for V1.4)
+const int switch2 = 16;
+const int switch3 = 19;
 
 //---------------------------------------------------
 // emonGLCD variables
@@ -102,7 +120,7 @@ byte page = 1;
 #define ONE_WIRE_BUS 5              // temperature sensor connection - hard wired
 OneWire oneWire(ONE_WIRE_BUS);
 DallasTemperature sensors(&oneWire);
-double temp, maxtemp,mintemp;
+double temp, maxtemp, mintemp;
 
 
 //--------------------------------------------------------------------------------------------
@@ -119,7 +137,7 @@ unsigned long fast_update, slow_update;
 void setup()
 {
   delay(500); 				   //wait for power to settle before firing up the RF
-  rf12_initialize(MYNODE, RF_freq,group);
+  rf12_initialize(MYNODE, RF_freq, group);
   delay(100);				   //wait for RF to settle befor turning on display
   glcd.begin(0x19);
   glcd.backLight(200);
@@ -132,10 +150,11 @@ void setup()
   pinMode(greenLED, OUTPUT);
   pinMode(redLED, OUTPUT);
 
-  #ifdef emonGLCDV1.3                      //enable internal pull up resistors for push switches on emonGLCD V1.3 (old)
+#ifdef emonGLCDV1.3                      //enable internal pull up resistors for push switches on emonGLCD V1.3 (old)
   pinMode(switch1, INPUT); pinMode(switch2, INPUT); pinMode(switch2, INPUT);
   digitalWrite(switch1, HIGH); digitalWrite(switch2, HIGH); digitalWrite(switch3, HIGH);
-  #endif
+#endif
+
 }
 
 //--------------------------------------------------------------------------------------------
@@ -144,25 +163,45 @@ void setup()
 void loop()
 {
 
-  if (rf12_recvDone())
-  {
-    if (rf12_crc == 0 && (rf12_hdr & RF12_HDR_CTL) == 0)  // and no rf errors
-    {
-      int node_id = (rf12_hdr & 0x1F);
-      if (node_id == 10) {emontx = *(PayloadTX*) rf12_data; last_emontx = millis();}
 
-      if (node_id == 15)
-      {
+  // Did we receive any commands via RF ?
+  if ( (rf12_recvDone() && rf12_crc == 0)  && ((rf12_hdr & RF12_HDR_CTL) == 0) ) {
+
+    int node_id = (rf12_hdr & 0x1F);
+
+#ifdef EMONTX
+      if (node_id == EMONTX && sizeof(emontx) == rf12_len ) {
+        emontx = *(PayloadTX*) rf12_data; last_emontx = millis();
+      }
+
+      if (node_id == 15) {
         RTC.adjust(DateTime(2013, 1, 1, rf12_data[1], rf12_data[2], rf12_data[3]));
         last_emonbase = millis();
       }
+   
+#else 
+
+    if (node_id == EMONPI && sizeof(emontx) == rf12_len)
+    {
+      emontx = *(PayloadTX*) rf12_data;
+      if (emontx.nodeId == MYNODE) {
+        last_emontx = millis();
+        RTC.adjust(DateTime(2018, 1, 1, emontx.hour, emontx.min, emontx.sec));
+        last_emonbase = millis();
+      }
     }
+
+
+#endif
+
+
+
   }
 
   //--------------------------------------------------------------------------------------------
   // Display update every 200ms
   //--------------------------------------------------------------------------------------------
-  if ((millis()-fast_update)>200)
+  if ((millis() - fast_update) > 200)
   {
     fast_update = millis();
 
@@ -171,62 +210,77 @@ void loop()
     hour = now.hour();
     minute = now.minute();
 
-    if (SolarPV_type==1){
-    usekwh += (emontx.power1 * 0.2) / 3600000;
-    genkwh += (emontx.power2 * 0.2) / 3600000;
+#ifdef EMONTX
+    //if data came from EMONTX, calculate the kwh & manipulate (why?) the current values
+    if (SolarPV_type == 1) {
+      usekwh += (emontx.utilityW * 0.2) / 3600000;
+      genkwh += (emontx.solarW * 0.2) / 3600000;
+      cval_use = cval_use + (emontx.utilityW - cval_use) * 0.50;
+      cval_gen = cval_gen + (emontx.solarW - cval_gen) * 0.50;
     }
 
-    if (SolarPV_type==2){
-    usekwh += ((emontx.power1 + emontx.power2) * 0.2) / 3600000;
-    genkwh += (emontx.power2 * 0.2) / 3600000;
+    if (SolarPV_type == 2) {
+      usekwh += ((emontx.utilityW + emontx.solarW) * 0.2) / 3600000;
+      genkwh += (emontx.solarW * 0.2) / 3600000;
+      cval_use = cval_use + ((emontx.utilityW + emontx.solarW) - cval_use) * 0.50;
+      cval_gen = cval_gen + (emontx.solarW - cval_gen) * 0.50;
     }
+#else
+    //if data came from EMONPI, use what it told us for the kwh & current values
+    usekwh = (emontx.utilityKwh  + emontx.solarKwh ) / 100.0 ;
+    genkwh = emontx.solarKwh / 100.0 ;
+    cval_use = emontx.utilityW + emontx.solarW ;
+    cval_gen = emontx.solarW ;
+#endif
+
+
+
 
     if (last_hour == 23 && hour == 00)
     {
-      int i; for (i=6; i>0; i--) gen_history[i] = gen_history[i-1];
+      int i; for (i = 6; i > 0; i--) gen_history[i] = gen_history[i - 1];
       genkwh = 0;
-      for(i=6; i>0; i--) use_history[i] = use_history[i-1];
+      for (i = 6; i > 0; i--) use_history[i] = use_history[i - 1];
       usekwh = 0;
 
     }
     gen_history[0] = genkwh;
     use_history[0] = usekwh;
 
-    if (SolarPV_type==1){
-    cval_use = cval_use + (emontx.power1 - cval_use)*0.50;
-    cval_gen = cval_gen + (emontx.power2 - cval_gen)*0.50;
-    }
 
-    if (SolarPV_type==2){
-    cval_use = cval_use + ((emontx.power1+emontx.power2) - cval_use)*0.50;
-    cval_gen = cval_gen + (emontx.power2 - cval_gen)*0.50;
-    }
 
-    if (cval_gen<PV_gen_offset) cval_gen=0;                  //set generation to zero when generation level drops below a certian level (at night) eg. 20W
+
+
+    
+
+    if (cval_gen < PV_gen_offset) cval_gen = 0;              //set generation to zero when generation level drops below a certian level (at night) eg. 20W
 
     last_switch_state = switch_state;
     switch_state = digitalRead(switch1);
-    if (!last_switch_state && switch_state) { page += 1; if (page>4) page = 1; }
+    if (!last_switch_state && switch_state) {
+      page += 1;
+      if (page > 4) page = 1;
+    }
 
-    if (page==1)
+    if (page == 1)
     {
-                          //use, usekwh, gen,    maxgen, genkwh, temp, mintemp, maxtemp, hour, minute, last_emontx, last_emonbase)
-      draw_solar_page(cval_use, usekwh, cval_gen, maxgen, genkwh, temp, mintemp, maxtemp, hour,minute, last_emontx, last_emonbase);
+      //use, usekwh, gen,    maxgen, genkwh, temp, mintemp, maxtemp, hour, minute, last_emontx, last_emonbase)
+      draw_solar_page(cval_use, usekwh, cval_gen, maxgen, genkwh, temp, mintemp, maxtemp, hour, minute, last_emontx, last_emonbase);
       glcd.refresh();
     }
-    /*else if (page==2)
-    {
-      draw_power_page( "POWER" ,cval_use, "USE", usekwh);
-      draw_temperature_time_footer(temp, mintemp, maxtemp, hour,minute);
-      glcd.refresh();
-    }
-    else if (page==3)
-    {
-      draw_power_page( "SOLAR" ,cval_gen, "GEN", genkwh);
-      draw_temperature_time_footer(temp, mintemp, maxtemp, hour,minute);
-      glcd.refresh();
-    }*/
     else if (page==2)
+      {
+      draw_power_page( "Utility Power" ,cval_use, "USED", usekwh);
+      draw_temperature_time_footer(temp, mintemp, maxtemp, hour,minute);
+      glcd.refresh();
+      }
+      else if (page==3)
+      {
+      draw_power_page( "Solar Power" ,cval_gen, "GEN", genkwh);
+      draw_temperature_time_footer(temp, mintemp, maxtemp, hour,minute);
+      glcd.refresh();
+      }
+      else if (page == 4)
     {
       draw_history_page(gen_history, use_history);
     }
@@ -234,34 +288,35 @@ void loop()
     int LDR = analogRead(LDRpin);                     // Read the LDR Value so we can work out the light level in the room.
     int LDRbacklight = map(LDR, 0, 1023, 50, 250);    // Map the data from the LDR from 0-1023 (Max seen 1000) to var GLCDbrightness min/max
     LDRbacklight = constrain(LDRbacklight, 0, 255);   // Constrain the value to make sure its a PWM value 0-255
-    if ((hour > 22) ||  (hour < 5)) glcd.backLight(0); else glcd.backLight(LDRbacklight);
+    //if ((hour > 23) ||  (hour < 6)) glcd.backLight(0); else 
+    glcd.backLight(LDRbacklight);
 
-    int PWRleds= map(cval_use-cval_gen, 0, maxgen, 0, 255);     // Map importing value from (LED brightness - cval3 is the smoothed grid value - see display above
-    if (PWRleds<0) PWRleds = PWRleds*-1;                        // keep it positive
+    int PWRleds = map(cval_use - cval_gen, 0, maxgen, 0, 255);  // Map importing value from (LED brightness - cval3 is the smoothed grid value - see display above
+    if (PWRleds < 0) PWRleds = PWRleds * -1;                    // keep it positive
     PWRleds = constrain(PWRleds, 0, 255);                       // Constrain the value to make sure its a PWM value 0-255
 
-    if (cval_gen>PV_gen_offset) {
+    //if (cval_gen > PV_gen_offset) {
       if (cval_gen > cval_use) {            //show green LED when gen>consumption cval are the smooth curve values
-	analogWrite(redLED, 0);
-	analogWrite(greenLED, PWRleds);
+        analogWrite(redLED, 0);
+        analogWrite(greenLED, PWRleds);
 
       } else {                              //red if consumption>gen
         analogWrite(greenLED, 0);
-	analogWrite(redLED, PWRleds);
+        analogWrite(redLED, PWRleds);
       }
-    } else {                                //Led's off at night and when solar PV is not generating
-      analogWrite(redLED, 0);
-      analogWrite(greenLED, 0);
-    }
+    //} else {                                //Led's off at night and when solar PV is not generating
+    //  analogWrite(redLED, 0);
+    //  analogWrite(greenLED, 0);
+    //}
   }
 
-  if ((millis()-slow_update)>10000)
+  if ((millis() - slow_update) > 35000)
   {
     slow_update = millis();
 
     sensors.requestTemperatures();
     double rawtemp = (sensors.getTempCByIndex(0));
-    if ((rawtemp>-20) && (rawtemp<50)) temp=rawtemp;                  //is temperature withing reasonable limits?
+    if ((rawtemp > -20) && (rawtemp < 60)) temp = rawtemp;            //is temperature withing reasonable limits?
     if (temp > maxtemp) maxtemp = temp;
     if (temp < mintemp) mintemp = temp;
 
