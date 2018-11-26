@@ -49,7 +49,7 @@ First you need to add the following to your emonhub.conf file for each emonGlcd 
 
 
 Simply edit firmware/SolarPV.ino and ensure line 63 has the nodeId of your emonpi (defaults to 5) and upload the firmware to your emonglcd.
-A compiled version exists in the 'compiled' directory. 
+A compiled version exists in the firmware/SolarPV/compiled/ directory. 
 
 For updating, you can either use the supplied node-red flow ( emonglcd_updater_nodered.json ) or a companion perl script running on your emonpi.
 
