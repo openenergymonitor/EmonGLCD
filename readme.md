@@ -28,16 +28,9 @@ The emonGLCD has an on-board temperate sensor, light sensor and two tri-color am
 ## Using with emonpi
 
 The latest emonglcd firmware supports reading data that is transmitted via emonpi.  
-Simply edit firmware/SolarPV.ino and ensure line 63 has the nodeId of your emonpi. 
-A companion script (emonglcd-send.pl) has been provided in this repo that reads any emonhub node/feed values and transmits them to mulitple emonglcd(s). 
-Simply place the emonglcd-send.cfg file in /etc , edit it with your emonGLCD nodeid(s) and the variables you wish to use for solarW, utilityW, solarKwh and utilityKwh.
-The script will update the emonpi each time any of these node variables change in emonhub.
-emonglcd-send.pl works by subscribing to these topics via MQTT and using MQTT to make RF transmit requests to emonhub (which are then sent to each emonglcd).
 
-A systemd run file has also been provided to run this at startup, simply place systemd/emonglcd.service into /lib/systemd/system and run 'systemctl enable emonglcd'
- 
+First you need to add the following to your emonhub.conf file
 
-Add the following definition into your emonhub.conf file for each emonGlcd that you have:
 ```
 [[20]]
     nodename = emonglcd
@@ -54,6 +47,21 @@ Add the following definition into your emonhub.conf file for each emonGlcd that 
      units = h,min,sec,W,W,kwh,kwh
 ```
 
+
+Simply edit firmware/SolarPV.ino and ensure line 63 has the nodeId of your emonpi (defaults to 5) and upload the firmware to your emonglcd.
+A compiled version exists in the 'compiled' directory. 
+
+For updating, you can either use the supplied node-red flow ( emonglcd_updater_nodered.json ) or a companion perl script running on your emonpi.
+Either method allows you to chose which emonpi node/feed values are to be used for Solar Watts/kwh & Utility Watts/Kwh.
+Both methods will update the emonpi each time any of these node variables change in emonhub.
+They work by subscribing to these topics via MQTT and using MQTT to make RF transmit requests to emonhub (which are then sent to each emonglcd).
+
+The companion script (emonglcd-send.pl) has been provided in this repo that reads any emonhub node/feed values and transmits them to mulitple emonglcd(s). 
+Simply place the emonglcd-send.cfg file in /etc , edit it with your emonGLCD nodeid(s) and the variables you wish to use for solarW, utilityW, solarKwh and utilityKwh.
+A systemd run file has also been provided to run this at startup, simply place systemd/emonglcd.service into /lib/systemd/system and run 'systemctl enable emonglcd'
+ 
+
+Add the following definition into your emonhub.conf file for each emonGlcd that you have:
 ## Using without emonpi (sniff from emonTx)
 To use without emonpi and have the emonglcd sniff the data from a emonTx, simply change line 64 to include your nodeId of the emonTx, and undef EMONPI in line 63:
 
