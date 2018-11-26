@@ -1,0 +1,15 @@
+[Unit]
+Description=EmonGLCD display update service
+After=network.target mosquitto.service
+
+[Service]
+Restart=on-failure
+User=solar
+TimeoutSec=5min
+IgnoreSIGPIPE=no
+KillMode=process
+GuessMainPID=no
+ExecStart=/home/solar/home_automation/EmonGLCD/emonglcd-send.pl
+
+[Install]
+WantedBy=multi-user.target
