@@ -72,9 +72,10 @@ Note:(you may need to install  Net::MQTT::Simple and Config::Simple  from cpan )
 
 ## Using without emonpi (sniff from emonTx)
 To use without emonpi and have the emonglcd sniff the data from a emonTx, simply change line 64 to include your nodeId of the emonTx, and undef EMONPI in line 63:
-
-#undef EMONPI
+```
+#undef EMONPI 5
 #define EMONTX  27
+```
 
 ## Build Guide
 
