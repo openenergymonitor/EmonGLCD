@@ -9,7 +9,7 @@ TimeoutSec=5min
 IgnoreSIGPIPE=no
 KillMode=process
 GuessMainPID=no
-ExecStart=/home/solar/home_automation/EmonGLCD/emonglcd-send.pl
+ExecStart=/home/pi/EmonGLCD/emonglcd-send.pl
 
 [Install]
 WantedBy=multi-user.target
