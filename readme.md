@@ -52,7 +52,9 @@ Simply edit firmware/SolarPV.ino and ensure line 63 has the nodeId of your emonp
 A compiled version exists in the 'compiled' directory. 
 
 For updating, you can either use the supplied node-red flow ( emonglcd_updater_nodered.json ) or a companion perl script running on your emonpi.
+
 Either method allows you to chose which emonpi node/feed values are to be used for Solar Watts/kwh & Utility Watts/Kwh.
+
 Both methods will update the emonpi each time any of these node variables change in emonhub.
 They work by subscribing to these topics via MQTT and using MQTT to make RF transmit requests to emonhub (which are then sent to each emonglcd).
 
