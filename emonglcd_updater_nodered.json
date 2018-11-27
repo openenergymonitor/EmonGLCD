@@ -1,0 +1,200 @@
+[
+    {
+        "id": "fa3f2e11.da5a3",
+        "type": "tab",
+        "label": "emonGLCDupdate",
+        "disabled": false,
+        "info": "This flow updates an emonGLCD display, with data from EmonHub/Emonpi\n\nSimply edit the MQTT nodes to select which emonhub input you wish to use for\n\nsolarW\nutilityKw\nsolarKwh (eToday is some parlence)\nutilityKwh\n\n\nYou can enhance this flow to do things like reset Kwh at midnight etc.\n\n"
+    },
+    {
+        "id": "475e0948.0fda1",
+        "type": "mqtt in",
+        "z": "fa3f2e11.da5a3",
+        "name": "Utility Kw",
+        "topic": "emon/socomec/Kw",
+        "qos": "2",
+        "broker": "396670b0.0ef31",
+        "x": 220,
+        "y": 80,
+        "wires": [
+            [
+                "4c33d7ab.747"
+            ]
+        ]
+    },
+    {
+        "id": "2b3f926e.90a496",
+        "type": "mqtt in",
+        "z": "fa3f2e11.da5a3",
+        "name": "Solar Watts",
+        "topic": "emon/samilpower/W",
+        "qos": "2",
+        "broker": "396670b0.0ef31",
+        "x": 230,
+        "y": 120,
+        "wires": [
+            [
+                "afa1a586.c1a82"
+            ]
+        ]
+    },
+    {
+        "id": "c2dddf79.b9a558",
+        "type": "mqtt in",
+        "z": "fa3f2e11.da5a3",
+        "name": "Solar Kwh",
+        "topic": "emon/samilpower/ETODAY",
+        "qos": "2",
+        "broker": "396670b0.0ef31",
+        "x": 220,
+        "y": 200,
+        "wires": [
+            [
+                "4ae32015.89d278"
+            ]
+        ]
+    },
+    {
+        "id": "5d221af6.ed704c",
+        "type": "mqtt in",
+        "z": "fa3f2e11.da5a3",
+        "name": "Utility Kwh",
+        "topic": "emon/socomec/Kwhplus",
+        "qos": "2",
+        "broker": "396670b0.0ef31",
+        "x": 220,
+        "y": 160,
+        "wires": [
+            [
+                "826d969c.398cc8"
+            ]
+        ]
+    },
+    {
+        "id": "4c33d7ab.747",
+        "type": "function",
+        "z": "fa3f2e11.da5a3",
+        "name": "Convert to watts & store",
+        "func": "//Only send integers to emonglcd \nflow.set(\"utilityW\", msg.payload * 1000) ;\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 450,
+        "y": 80,
+        "wires": [
+            [
+                "ebe520f.c7915e"
+            ]
+        ]
+    },
+    {
+        "id": "826d969c.398cc8",
+        "type": "function",
+        "z": "fa3f2e11.da5a3",
+        "name": "Convert to int & store",
+        "func": "//Only send integers to emonglcd \n\nflow.set(\"utilityKwh\", msg.payload * 100) ;\n\nreturn msg ;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 440,
+        "y": 160,
+        "wires": [
+            [
+                "ebe520f.c7915e"
+            ]
+        ]
+    },
+    {
+        "id": "4ae32015.89d278",
+        "type": "function",
+        "z": "fa3f2e11.da5a3",
+        "name": "Convert to int & store",
+        "func": "//Only send integers to emonglcd \n\nflow.set(\"solarKwh\", msg.payload * 100) ;\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 440,
+        "y": 200,
+        "wires": [
+            [
+                "ebe520f.c7915e"
+            ]
+        ]
+    },
+    {
+        "id": "ebe520f.c7915e",
+        "type": "function",
+        "z": "fa3f2e11.da5a3",
+        "name": "Create emonGLCD MQTT msg",
+        "func": "var utilityW = flow.get(\"utilityW\") ;\nvar utilityKwh = flow.get(\"utilityKwh\") ;\nvar solarW = flow.get(\"solarW\") ;\nvar solarKwh = flow.get(\"solarKwh\") ;\n\nvar date = new Date() ;\n\nvar seconds = date.getSeconds();\nvar minutes = date.getMinutes();\nvar hour = date.getHours();\nvar time = date.getTime() / 1000\n\nvar lastsend = flow.get(\"lastsend\") ;\n\nif (lastsend === undefined) {\n    lastsend = 0 ;\n}\n\nif (solarKwh === undefined) {\n    solarKwh = 0;\n}\n\nif (solarW === undefined) {\n    solarW = 0;\n}\n\nif (utilityKwh === undefined) {\n    utilityKwh = 0;\n}\n\n\nif (utilityW === undefined) {\n    utilityW = 0;\n}\n\n\nmsg.payload = hour + ',' + minutes + ',' + seconds + ',' + utilityW + ',' + solarW + ',' + utilityKwh + ',' + solarKwh;\n\n\nif (time - lastsend > 30) {\n    flow.set(\"lastsend\", time) ;\n    return msg;\n} else {\n    return null ;\n}\n",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 770,
+        "y": 160,
+        "wires": [
+            [
+                "3ce29bf7.b8a0c4",
+                "b3b6c854.034458"
+            ]
+        ]
+    },
+    {
+        "id": "afa1a586.c1a82",
+        "type": "function",
+        "z": "fa3f2e11.da5a3",
+        "name": "Convert to int & store",
+        "func": "//Only send integers to emonglcd \n\nflow.set(\"solarW\", msg.payload) ;\n\nreturn msg ;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 440,
+        "y": 120,
+        "wires": [
+            [
+                "ebe520f.c7915e"
+            ]
+        ]
+    },
+    {
+        "id": "b3b6c854.034458",
+        "type": "mqtt out",
+        "z": "fa3f2e11.da5a3",
+        "name": "emonGLCD",
+        "topic": "emonhub/tx/20/values",
+        "qos": "2",
+        "retain": "",
+        "broker": "396670b0.0ef31",
+        "x": 1030,
+        "y": 160,
+        "wires": []
+    },
+    {
+        "id": "3ce29bf7.b8a0c4",
+        "type": "debug",
+        "z": "fa3f2e11.da5a3",
+        "name": "",
+        "active": false,
+        "console": "false",
+        "complete": "false",
+        "x": 1030,
+        "y": 220,
+        "wires": []
+    },
+    {
+        "id": "396670b0.0ef31",
+        "type": "mqtt-broker",
+        "z": "",
+        "broker": "localhost",
+        "port": "1883",
+        "clientid": "",
+        "usetls": false,
+        "verifyservercert": true,
+        "compatmode": true,
+        "keepalive": "15",
+        "cleansession": true,
+        "willTopic": "",
+        "willQos": "0",
+        "willRetain": "false",
+        "willPayload": "",
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthRetain": "false",
+        "birthPayload": ""
+    }
+]

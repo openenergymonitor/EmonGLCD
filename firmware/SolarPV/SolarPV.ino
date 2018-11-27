@@ -295,7 +295,7 @@ void loop()
     if (PWRleds < 0) PWRleds = PWRleds * -1;                    // keep it positive
     PWRleds = constrain(PWRleds, 0, 255);                       // Constrain the value to make sure its a PWM value 0-255
 
-    //if (cval_gen > PV_gen_offset) {
+    if (cval_gen > PV_gen_offset) {
       if (cval_gen > cval_use) {            //show green LED when gen>consumption cval are the smooth curve values
         analogWrite(redLED, 0);
         analogWrite(greenLED, PWRleds);
@@ -304,10 +304,10 @@ void loop()
         analogWrite(greenLED, 0);
         analogWrite(redLED, PWRleds);
       }
-    //} else {                                //Led's off at night and when solar PV is not generating
-    //  analogWrite(redLED, 0);
-    //  analogWrite(greenLED, 0);
-    //}
+    } else {                                //Led's off at night and when solar PV is not generating
+      analogWrite(redLED, 0);
+      analogWrite(greenLED, 0);
+    }
   }
 
   if ((millis() - slow_update) > 35000)

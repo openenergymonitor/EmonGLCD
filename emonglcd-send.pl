@@ -14,7 +14,6 @@ use File::Basename qw(dirname);
 use Cwd  qw(abs_path);
 use lib dirname(dirname abs_path $0) . '/libs/perl';
 
-use HomeAutomation ;
 
 
 
@@ -32,7 +31,7 @@ my $sendInterval = 15 ; #only send max every $sendInterval secs
 
 
 
-my $cfg = new Config::Simple('/etc/emonglcd-send.cfg') ;
+my $cfg = new Config::Simple('/home/pi/EmonGLCD/emonglcd-send.cfg') ;
 
 
 #MQTT params
@@ -44,7 +43,7 @@ my $debug = $cfg->param('debug') ;
 
 sub sendToEmonglcd {
 	
-	my ($solarW, $utilityW) = @_ ;
+	my ($solarW, $utilityW, $solarKwh, $utilityKwh) = @_ ;
 	my $mqttValues = "0" ;
 
 
@@ -67,6 +66,14 @@ sub sendToEmonglcd {
 
 
 
+sub mqttSend {
+
+        my ($mqtt, $topic, %mqdata) = @_ ;
+
+        foreach my $key (keys %mqdata) {
+                $$mqtt->publish("$topic/$key" => $mqdata{$key});
+        }
+}
 
 
 sub msgRecv {
@@ -106,7 +113,7 @@ sub msgRecv {
 
 		foreach my $emonglcdNodeId (split (',', $cfg->param('emonglcd_nodeid')) ) {
 			$mqttTopic =  $mqttTopic . "/" . $emonglcdNodeId ."/values" ;
-			HomeAutomation::mqttSend(\$mqtt, $mqttTopic, %mqttData) ;
+			mqttSend(\$mqtt, $mqttTopic, %mqttData) ;
 			$lastSend = time() ;
 			if ($debug) {
 				print "msgRecv $mqttData{msg} sent to emonglcd node $emonglcdNodeId \n" ;
