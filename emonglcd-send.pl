@@ -35,7 +35,7 @@ my $cfg = new Config::Simple('/home/pi/EmonGLCD/emonglcd-send.cfg') ;
 
 
 #MQTT params
-my $mqttTopic = $cfg->param('mqtt_pub_topic') ;
+my $baseTopic = $cfg->param('mqtt_pub_topic') ;
 
 
 my $debug = $cfg->param('debug') ;
@@ -81,6 +81,7 @@ sub msgRecv {
 	my  ($topic, $msg) = @_ ;
 
 	my $sendNow = 0 ;
+	my @nodeIds = ();
 
 	if ($debug) {
 		print "MQTT: topic $topic sent payload ($msg) \n" ;
@@ -110,10 +111,10 @@ sub msgRecv {
 
 	if ( time() - $sendInterval > $lastSend || $sendNow) {
 		# Set MQTT topic to emonhub/tx/<nodeid>/values  for TX by emonpi
-
-		foreach my $emonglcdNodeId (split (',', $cfg->param('emonglcd_nodeid')) ) {
-			$mqttTopic =  $mqttTopic . "/" . $emonglcdNodeId ."/values" ;
-			mqttSend(\$mqtt, $mqttTopic, %mqttData) ;
+		
+		foreach my $emonglcdNodeId ($cfg->param('emonglcd_nodeid')) {
+			$topic =  $baseTopic . "/" . $emonglcdNodeId ."/values" ;
+			mqttSend(\$mqtt, $topic, %mqttData) ;
 			$lastSend = time() ;
 			if ($debug) {
 				print "msgRecv $mqttData{msg} sent to emonglcd node $emonglcdNodeId \n" ;
