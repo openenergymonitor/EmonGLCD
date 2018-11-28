@@ -284,7 +284,7 @@ void loop()
     }
 
     int LDR = analogRead(LDRpin);                     // Read the LDR Value so we can work out the light level in the room.
-    int LDRbacklight = map(LDR, 0, 1023, 50, 250);    // Map the data from the LDR from 0-1023 (Max seen 1000) to var GLCDbrightness min/max
+    int LDRbacklight = map(LDR, 0, 1023, 1, 250);    // Map the data from the LDR from 0-1023 (Max seen 1000) to var GLCDbrightness min/max
     LDRbacklight = constrain(LDRbacklight, 0, 255);   // Constrain the value to make sure its a PWM value 0-255
     //if ((hour > 23) ||  (hour < 6)) glcd.backLight(0); else
     glcd.backLight(LDRbacklight);
@@ -293,7 +293,8 @@ void loop()
     if (PWRleds < 0) PWRleds = PWRleds * -1;                    // keep it positive
     PWRleds = constrain(PWRleds, 0, 255);                       // Constrain the value to make sure its a PWM value 0-255
 
-    if (cval_gen > PV_gen_offset) {
+ //   if (cval_gen > PV_gen_offset) {
+     if (LDRbacklight > 120) {
       if (cval_gen > cval_use) {            //show green LED when gen>consumption cval are the smooth curve values
         analogWrite(redLED, 0);
         analogWrite(greenLED, PWRleds);
@@ -302,7 +303,7 @@ void loop()
         analogWrite(greenLED, 0);
         analogWrite(redLED, PWRleds);
       }
-    } else {                                //Led's off at night and when solar PV is not generating
+    } else {                                //Led's off when it's dark in the room (imagine watching a movie)
       analogWrite(redLED, 0);
       analogWrite(greenLED, 0);
     }
