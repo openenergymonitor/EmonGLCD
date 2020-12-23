@@ -95,7 +95,7 @@ PayloadGLCD emonglcd;
 //#define emonGLCDV1.3               // un-comment if using older V1.3 emonGLCD PCB - enables required internal pull up resistors. Not needed for V1.4 onwards
 const int SolarPV_type = 1;          // Select solar PV wiring type - Type 1 is when use and gen can be monitored seperatly. Type 2 is when gen and use can only be monitored together, see solar PV application documentation for more info
 const int maxgen = 5900;            // peak output of soalr PV system in W - used to calculate when to change cloud icon to a sun
-const int PV_gen_offset = 5;       // When generation drops below this level generation will be set to zero - used to force generation level to zero at night
+byte PV_gen_offset = 5;       // When generation drops below this level generation will be set to zero - used to force generation level to zero at night
 
 const int greenLED = 6;             // Green tri-color LED
 const int redLED = 9;               // Red tri-color LED
@@ -109,7 +109,7 @@ const int switch3 = 19;
 //---------------------------------------------------
 int hour = 12, minute = 0;
 double usekwh = 0, genkwh = 0;
-double use_history[7], gen_history[7];
+//double use_history[7], gen_history[7];
 int cval_use, cval_gen;
 byte page = 1;
 
@@ -236,14 +236,14 @@ void loop()
 
     if (last_hour == 23 && hour == 00)
     {
-      int i; for (i = 6; i > 0; i--) gen_history[i] = gen_history[i - 1];
+      // int i; for (i = 6; i > 0; i--) gen_history[i] = gen_history[i - 1];
       genkwh = 0;
-      for (i = 6; i > 0; i--) use_history[i] = use_history[i - 1];
+      //for (i = 6; i > 0; i--) use_history[i] = use_history[i - 1];
       usekwh = 0;
 
     }
-    gen_history[0] = genkwh;
-    use_history[0] = usekwh;
+    // gen_history[0] = genkwh;
+    // use_history[0] = usekwh;
 
 
 
@@ -257,8 +257,19 @@ void loop()
     switch_state = digitalRead(switch1);
     if (!last_switch_state && switch_state) {
       page += 1;
-      if (page > 4) page = 1;
+      if (page > 3) page = 1;
     }
+
+    last_switch_state = switch_state;
+    switch_state = digitalRead(switch1);
+    if (!last_switch_state && switch_state) {
+      if ( PV_gen_offset != 0 ) {
+        PV_gen_offset = 0 ;
+      } else {
+        PV_gen_offset = 5 ;
+      }
+    }
+
 
     if (page == 1)
     {
@@ -268,7 +279,7 @@ void loop()
     }
     else if (page == 2)
     {
-      draw_power_page( "Utility Power" , cval_use, "USED", usekwh);
+      draw_power_page( "Utility Power" , (cval_use - cval_gen), "USED", usekwh);
       draw_temperature_time_footer(temp, mintemp, maxtemp, hour, minute);
       glcd.refresh();
     }
@@ -280,7 +291,7 @@ void loop()
     }
     else if (page == 4)
     {
-      draw_history_page(gen_history, use_history);
+      //draw_history_page(gen_history, use_history);
     }
 
     int LDR = analogRead(LDRpin);                     // Read the LDR Value so we can work out the light level in the room.
@@ -293,8 +304,7 @@ void loop()
     if (PWRleds < 0) PWRleds = PWRleds * -1;                    // keep it positive
     PWRleds = constrain(PWRleds, 0, 255);                       // Constrain the value to make sure its a PWM value 0-255
 
- //   if (cval_gen > PV_gen_offset) {
-     if (LDRbacklight > 120) {
+    if (cval_gen > PV_gen_offset) {
       if (cval_gen > cval_use) {            //show green LED when gen>consumption cval are the smooth curve values
         analogWrite(redLED, 0);
         analogWrite(greenLED, PWRleds);
@@ -302,6 +312,7 @@ void loop()
       } else {                              //red if consumption>gen
         analogWrite(greenLED, 0);
         analogWrite(redLED, PWRleds);
+
       }
     } else {                                //Led's off when it's dark in the room (imagine watching a movie)
       analogWrite(redLED, 0);
@@ -315,12 +326,15 @@ void loop()
 
     sensors.requestTemperatures();
     double rawtemp = (sensors.getTempCByIndex(0));
-    if ((rawtemp > -20) && (rawtemp < 60)) temp = rawtemp;            //is temperature withing reasonable limits?
+    if ((rawtemp > -30) && (rawtemp < 70)) {
+      temp = rawtemp;            //is temperature withing reasonable limits?
+      emonglcd.temperature = (int) (temp * 100);                          // set emonglcd payload
+      rf12_sendNow(0, &emonglcd, sizeof emonglcd);                     //send temperature data via RFM12B using new rf12_sendNow wrapper -glynhudson
+      rf12_sendWait(2);
+    }
     if (temp > maxtemp) maxtemp = temp;
     if (temp < mintemp) mintemp = temp;
 
-    emonglcd.temperature = (int) (temp * 100);                          // set emonglcd payload
-    rf12_sendNow(0, &emonglcd, sizeof emonglcd);                     //send temperature data via RFM12B using new rf12_sendNow wrapper -glynhudson
-    rf12_sendWait(2);
+
   }
 }
