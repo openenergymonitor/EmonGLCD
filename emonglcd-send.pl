@@ -27,7 +27,7 @@ my $solarW = 0 ;
 my $utilityKwh = 0 ;
 my $solarKwh = 0 ;
 my $lastSend = 0 ;	#when we last sent to emonglcd
-my $sendInterval = 15 ; #only send max every $sendInterval secs
+my $sendInterval = 30 ; #only send max every $sendInterval secs
 
 
 
@@ -53,8 +53,12 @@ sub sendToEmonglcd {
 	my $hour = strftime('%H', localtime) ;
 	my $min = strftime('%M', localtime) ;
 	my $sec = strftime('%S', localtime) ;
+	my $day = strftime('%d', localtime) ;
+	my $month = strftime('%m', localtime) ;
+	my $year = strftime('%y', localtime) ;
+	my $type = "10"; 
 
-	$mqttValues= "$hour," . "$min," . "$sec," . "$utilityW," . "$solarW," . "$utilityKwh," . "$solarKwh" ;  
+	$mqttValues= "$type," . "$hour," . "$min," . "$sec," . "$day," . "$month," . "$year," . "$utilityW," . "$solarW," . "$utilityKwh," . "$solarKwh" ;  
 	
 	if ($debug) {
 		print "sendToemonglcd: Creating MQTT payload for emonglcd : $mqttValues \n";
@@ -82,7 +86,6 @@ sub msgRecv {
 
 	my $sendNow = 0 ;
 	my @nodeIds = ();
-
 	if ($debug) {
 		print "MQTT: topic $topic sent payload ($msg) \n" ;
 	}
@@ -90,14 +93,14 @@ sub msgRecv {
 
 	if ($topic eq $cfg->param('mqtt_sub_utilityW') ) {
 		$utilityW = $msg * 1000;
-		$sendNow = 1;
+		$sendNow = 0;
 	} elsif ($topic eq $cfg->param('mqtt_sub_utilityKwh') ) {
 		#multiply by 100 so we only send ints
 		$utilityKwh = $msg * 100 ;
 		$sendNow = 0;
 	} elsif ($topic eq $cfg->param('mqtt_sub_solarW') ) {
 		$solarW = $msg ;
-		$sendNow = 1;
+		$sendNow = 0;
 	} elsif ($topic eq $cfg->param('mqtt_sub_solarKwh') ) {
 		#multiply by 100 so we only send ints
 		$solarKwh = $msg * 100 ;
@@ -105,17 +108,19 @@ sub msgRecv {
 	}
 
 
-	# build the mqtt payload
-	$mqttData{msg} = sendToEmonglcd($solarW,$utilityW,$solarKwh,$utilityKwh) ;
 
 
 	if ( time() - $sendInterval > $lastSend || $sendNow) {
-		# Set MQTT topic to emonhub/tx/<nodeid>/values  for TX by emonpi
 		
+		# Set MQTT topic to emonhub/tx/<nodeid>/values  for TX by emonpi
+
 		foreach my $emonglcdNodeId ($cfg->param('emonglcd_nodeid')) {
+			# build the mqtt payload
+			$mqttData{msg} = sendToEmonglcd($solarW,$utilityW,$solarKwh,$utilityKwh) ;
 			$topic =  $baseTopic . "/" . $emonglcdNodeId ."/values" ;
 			mqttSend(\$mqtt, $topic, %mqttData) ;
 			$lastSend = time() ;
+			sleep(1) ;
 			if ($debug) {
 				print "msgRecv $mqttData{msg} sent to emonglcd node $emonglcdNodeId \n" ;
 			}
