@@ -4,9 +4,9 @@
 #include "utility/font_clR4x6.h"
 #include "utility/font_clR6x8.h"
 
-  int MINTEMP = -25;
-  int MAXTEMP = 60;
-  
+int MINTEMP = -25;
+int MAXTEMP = 60;
+
 //------------------------------------------------------------------
 // Draws a page showing a single power and energy value in big font
 //------------------------------------------------------------------
@@ -37,72 +37,168 @@ void draw_power_page(char* powerstr, double powerval, char* energystr,  double e
   glcd.drawString(85, 38, str);
 }
 
+void draw_temperature_footer(double temp, double mintemp, double maxtemp) {
 
-//------------------------------------------------------------------
-// Draws a footer showing GLCD temperature and the time
-//------------------------------------------------------------------
-void draw_temperature_time_footer(double temp, double mintemp, double maxtemp, double hour, double minute)
-{
-  glcd.drawLine(0, 47, 128, 47, WHITE);     //middle horizontal line
-
-  char str[50];
-  // GLCD Temperature
+  char str[10];
+  char str2[5];
   glcd.setFont(font_helvB12);
+
   if (temp < MINTEMP ) {
     strcpy (str, "--.-C");
   } else {
     dtostrf(temp, 0, 1, str);
     strcat(str, "C");
   }
+
   glcd.drawString(0, 50, str);
 
   // Minimum and maximum GLCD temperature
   glcd.setFont(font_clR4x6);
 
-if (mintemp < MINTEMP || maxtemp < MINTEMP ) {
-  strcpy (str, "--C");
-} 
+  if (mintemp < MINTEMP || maxtemp < MINTEMP ) {
+    strcpy (str, "--C");
+  }
 
-if (mintemp >= MINTEMP) {
-  itoa((int)mintemp, str, 10);
-  strcat(str, "C");
-}
-  
+  if (mintemp >= MINTEMP) {
+    itoa((int)mintemp, str, 10);
+    strcat(str, "C");
+  }
+
   glcd.drawString_P(46, 51, PSTR("MIN"));
   glcd.drawString(62, 51, str);
 
-if (maxtemp >= MINTEMP) {
-  itoa((int)maxtemp, str, 10);
-  strcat(str, "C");
-}
+  if (maxtemp >= MINTEMP) {
+    itoa((int)maxtemp, str, 10);
+    strcat(str, "C");
+  }
   glcd.drawString_P(46, 59, PSTR("MAX"));
   glcd.drawString(62, 59, str);
 
-  // Time
-  strcpy (str, "") ;
+}
+
+
+
+void draw_date_footer(DateTime now) {
+
+  char str[10];
   char str2[5];
-  itoa((int)hour, str2, 10);
-  if  (hour < 10) {
-    str[0] = '0';
-    str[1] = '\0';
-    strcat (str, str2) ;
+
+  // Current date
+  glcd.setFont(font_helvB12);
+
+  if (now.day() < 10) {
+    strcpy(str, "0") ;
+    itoa((int)now.day(), str2, 10);
+    strcat(str, str2) ;
   } else {
-    strcpy (str, str2) ;
+    itoa((int)now.day(), str, 10);
   }
 
-  if  (minute < 10) strcat(str, ": 0"); else strcat(str, ": ");
-  itoa((int)minute, str2, 10);
-  strcat(str, str2);
+  strcat(str, "/");
 
+  if (now.month() < 10) {
+    strcat(str, "0") ;
+  }
+
+  itoa((int)now.month(), str2, 10);
+  strcat(str, str2);
+  strcat(str, "/");
+
+  itoa((int)(now.year() - 2000), str2, 10);
+  strcat(str, str2);
+  strcat (str, " ") ;
+  glcd.drawString(0, 50, str);
+
+}
+
+//------------------------------------------------------------------
+// Draws a footer showing GLCD temperature and the date / time
+//------------------------------------------------------------------
+void draw_temperature_time_footer(double temp, double mintemp, double maxtemp, DateTime now)
+{
+
+  char str[10];
+  char str2[5];
+
+  /*toggleTemp is incremented every call (approx 200ms) , 
+   *when it reaches 127 display temperatures, when it rolls over to 0 display date
+   *resulting in display toggling between both every 25.4 secs
+   */
+    static byte toggleTemp = 0 ; 
+
+  glcd.drawLine(0, 47, 128, 47, WHITE);     //middle horizontal line
+
+
+#ifdef EMONTX
+  //Only display the temp & the time - no way to get a date over the air
+  draw_temperature_footer(temp, mintemp, maxtemp) ;
+#else
+
+  if (toggleTemp < 127 ) {
+    draw_date_footer(now) ;
+  } else {
+    draw_temperature_footer(temp, mintemp, maxtemp) ;
+  }
+
+  toggleTemp ++ ;
+
+#endif
+
+  //for both EMONTX & EMONPI operation, display the current time
   glcd.setFont(font_helvB12);
+
+  //glcd.drawString_P(5, 58, PSTR("Time:"));
+  if (now.hour() < 10) {
+    strcpy(str, "0") ;
+    itoa((int)now.hour(), str2, 10);
+    strcat(str, str2) ;
+  } else {
+    itoa((int)now.hour(), str, 10);
+  }
+
   glcd.drawString(82, 50, str);
+
+  if (now.second() % 2 == 0) {
+    strcpy (str, ":") ;
+  } else {
+    strcpy (str, "") ;
+  }
+  glcd.drawString(98, 50, str);
+  strcpy (str, "") ;
+
+  if  (now.minute() < 10) strcat(str, "0"); else strcat(str, " ");
+
+
+  itoa((int)now.minute(), str2, 10);
+  strcat(str, str2);
+  glcd.drawString(102, 50, str);
+
+  /*
+    // Time
+    strcpy (str, "") ;
+    char str2[5];
+    itoa((int)hour, str2, 10);
+    if  (hour < 10) {
+      str[0] = '0';
+      str[1] = '\0';
+      strcat (str, str2) ;
+    } else {
+      strcpy (str, str2) ;
+    }
+
+    if  (minute < 10) strcat(str, ": 0"); else strcat(str, ": ");
+    itoa((int)minute, str2, 10);
+    strcat(str, str2);
+  */
+  //glcd.setFont(font_helvB12);
+  //glcd.drawString(82, 50, str);
 
 }
 
 //------------------------------------------------------------------
 // Draws the Solar import/export page
 //------------------------------------------------------------------
-void draw_solar_page(double use, double usekwh, double gen, double maxgen, double genkwh, double temp, double mintemp, double maxtemp, double hour, double minute, unsigned long last_emontx, unsigned long last_emonbase)
+void draw_solar_page(double use, double usekwh, double gen, double maxgen, double genkwh, double temp, double mintemp, double maxtemp, DateTime now, unsigned long last_emontx, unsigned long last_emonbase)
 {
 
 
@@ -261,13 +357,34 @@ void draw_solar_page(double use, double usekwh, double gen, double maxgen, doubl
   glcd.drawString_P(97, 58, PSTR("max"));
   glcd.drawString(111, 58, str);
 
-  // Current time
-  glcd.drawString_P(5, 58, PSTR("Time:"));
-  itoa((int)hour, str, 10);
-  if  (minute < 10) strcat(str, ":0"); else strcat(str, ":");
-  itoa((int)minute, str2, 10);
+#ifdef EMONTX
+
+  //glcd.drawString_P(5, 58, PSTR("Time: "));
+  strcpy(str,"Time:  ") ;
+
+#else
+  // Current date + time
+  itoa((int)now.day(), str, 10);
+  strcat(str, "/");
+
+  itoa((int)now.month(), str2, 10);
   strcat(str, str2);
-  glcd.drawString(28, 58, str);
+  strcat(str, "/");
+
+  itoa((int)(now.year() - 2000), str2, 10);
+  strcat(str, str2);
+  strcat (str, " ") ;
+#endif
+
+  if (now.hour() < 10) {
+    strcat(str, "0") ;
+  }
+  itoa((int)now.hour(), str2, 10);
+  strcat (str, str2) ;
+  if  (now.minute() < 10) strcat(str, ":0"); else strcat(str, ":");
+  itoa((int)now.minute(), str2, 10);
+  strcat(str, str2);
+  glcd.drawString(4, 58, str);
 
 }
 
@@ -297,92 +414,93 @@ void draw_solar_page(double use, double usekwh, double gen, double maxgen, doubl
 
   glcd.refresh();
   }*/
-/*
-  void draw_history_page(double genkwh[7], double usekwh[7])
-  {
+
+#ifdef ENABLE_HIST
+void draw_history_page(double genkwh[7], double usekwh[7])
+{
   glcd.clear;
-  glcd.fillRect(0,0,128,64,0);
+  glcd.fillRect(0, 0, 128, 64, 0);
 
   char str[50];
 
   glcd.setFont(font_clR6x8);
-  glcd.drawString_P(40,0,PSTR("History"));
+  glcd.drawString_P(40, 0, PSTR("History"));
 
   glcd.setFont(font_clR4x6);
 
-  glcd.drawString_P(2,16,PSTR("Today"));
-  glcd.drawString_P(2,23,PSTR("Yesterday"));
-  glcd.drawString_P(2,30,PSTR("2 days ago"));
-  glcd.drawString_P(2,37,PSTR("3 days ago"));
-  glcd.drawString_P(2,44,PSTR("4 days ago"));
-  glcd.drawString_P(2,51,PSTR("5 days ago"));
-  glcd.drawString_P(2,58,PSTR("6 days ago"));
+  glcd.drawString_P(2, 16, PSTR("Today"));
+  glcd.drawString_P(2, 23, PSTR("Yesterday"));
+  glcd.drawString_P(2, 30, PSTR("2 days ago"));
+  glcd.drawString_P(2, 37, PSTR("3 days ago"));
+  glcd.drawString_P(2, 44, PSTR("4 days ago"));
+  glcd.drawString_P(2, 51, PSTR("5 days ago"));
+  glcd.drawString_P(2, 58, PSTR("6 days ago"));
 
   // draw grid consumption history
-  char kWh[4]="kWh";
+  char kWh[4] = "kWh";
   glcd.setFont(font_clR4x6);
-  glcd.drawString_P(56,9,PSTR("Used"));
+  glcd.drawString_P(56, 9, PSTR("Used"));
 
-  dtostrf((usekwh[0]),0,1,str); strcat(str,kWh);
+  dtostrf((usekwh[0]), 0, 1, str); strcat(str, kWh);
   glcd.setFont(font_clR4x6);
-  glcd.drawString(52,16,str);
+  glcd.drawString(52, 16, str);
 
-  dtostrf((usekwh[1]),0,1,str); strcat(str,kWh);
+  dtostrf((usekwh[1]), 0, 1, str); strcat(str, kWh);
   glcd.setFont(font_clR4x6);
-  glcd.drawString(52,23,str);
+  glcd.drawString(52, 23, str);
 
-  dtostrf((usekwh[2]),0,1,str);  strcat(str,kWh);
+  dtostrf((usekwh[2]), 0, 1, str);  strcat(str, kWh);
   glcd.setFont(font_clR4x6);
-  glcd.drawString(52,30,str);
+  glcd.drawString(52, 30, str);
 
-  dtostrf((usekwh[3]),0,1,str); strcat(str,kWh);
+  dtostrf((usekwh[3]), 0, 1, str); strcat(str, kWh);
   glcd.setFont(font_clR4x6);
-  glcd.drawString(52,37,str);
+  glcd.drawString(52, 37, str);
 
-  dtostrf((usekwh[4]),0,1,str); strcat(str,kWh);
+  dtostrf((usekwh[4]), 0, 1, str); strcat(str, kWh);
   glcd.setFont(font_clR4x6);
-  glcd.drawString(52,44,str);
+  glcd.drawString(52, 44, str);
 
-  dtostrf((usekwh[5]),0,1,str); strcat(str,kWh);
+  dtostrf((usekwh[5]), 0, 1, str); strcat(str, kWh);
   glcd.setFont(font_clR4x6);
-  glcd.drawString(52,51,str);
+  glcd.drawString(52, 51, str);
 
-  dtostrf((usekwh[6]),0,1,str); strcat(str,kWh);
+  dtostrf((usekwh[6]), 0, 1, str); strcat(str, kWh);
   glcd.setFont(font_clR4x6);
-  glcd.drawString(52,58,str);
+  glcd.drawString(52, 58, str);
 
   // draw solar PV generation history
   glcd.setFont(font_clR4x6);
-  glcd.drawString_P(90,9,PSTR("PV"));
+  glcd.drawString_P(90, 9, PSTR("PV"));
 
-  dtostrf((genkwh[0]),0,1,str); strcat(str,kWh);
+  dtostrf((genkwh[0]), 0, 1, str); strcat(str, kWh);
   glcd.setFont(font_clR4x6);
-  glcd.drawString(83,16,str);
+  glcd.drawString(83, 16, str);
 
-  dtostrf((genkwh[1]),0,1,str); strcat(str,kWh);
+  dtostrf((genkwh[1]), 0, 1, str); strcat(str, kWh);
   glcd.setFont(font_clR4x6);
-  glcd.drawString(83,23,str);
+  glcd.drawString(83, 23, str);
 
-  dtostrf((genkwh[2]),0,1,str); strcat(str,kWh);
+  dtostrf((genkwh[2]), 0, 1, str); strcat(str, kWh);
   glcd.setFont(font_clR4x6);
-  glcd.drawString(83,30,str);
+  glcd.drawString(83, 30, str);
 
-  dtostrf((genkwh[3]),0,1,str); strcat(str,kWh);
+  dtostrf((genkwh[3]), 0, 1, str); strcat(str, kWh);
   glcd.setFont(font_clR4x6);
-  glcd.drawString(83,37,str);
+  glcd.drawString(83, 37, str);
 
-  dtostrf((genkwh[4]),0,1,str); strcat(str,kWh);
+  dtostrf((genkwh[4]), 0, 1, str); strcat(str, kWh);
   glcd.setFont(font_clR4x6);
-  glcd.drawString(83,44,str);
+  glcd.drawString(83, 44, str);
 
-  dtostrf((genkwh[5]),0,1,str); strcat(str,kWh);
+  dtostrf((genkwh[5]), 0, 1, str); strcat(str, kWh);
   glcd.setFont(font_clR4x6);
-  glcd.drawString(83,51,str);
+  glcd.drawString(83, 51, str);
 
-  dtostrf((genkwh[6]),0,1,str); strcat(str,kWh);
+  dtostrf((genkwh[6]), 0, 1, str); strcat(str, kWh);
   glcd.setFont(font_clR4x6);
-  glcd.drawString(83,58,str);
+  glcd.drawString(83, 58, str);
 
   glcd.refresh();
-  }
-*/
+}
+#endif

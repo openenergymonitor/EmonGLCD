@@ -61,7 +61,15 @@ RTC_Millis RTC;
 #define RF_freq RF12_433MHZ     // frequency - match to same frequency as RFM12B module (change to 868Mhz or 915Mhz if appropriate)
 #define group 210            // network group, must be same as emonTx and emonBase
 #define EMONPI 5            //id of EMONPI base (where transmissions come from)
-#undef  EMONTX             //if sniffing EMONTX data, set this to id of EMONTX, else undef and then expect data from EMONPI 
+#undef EMONTX   26          //if sniffing EMONTX data, set this to id of EMONTX, else undef and then expect data from EMONPI 
+
+#undef ENABLE_HIST        //enable / disable historic readings page (#define if desired)
+
+#ifdef ENABLE_HIST
+#define NUMPAGES 4
+#else
+#define NUMPAGES 3
+#endif
 
 
 
@@ -75,8 +83,9 @@ typedef struct {
 } PayloadTX;         // neat way of packaging data for RF comms
 #else
 typedef struct {
-  byte nodeId ;
-  byte hour, min, sec ;
+  byte id ;
+  byte type ;     //should always be 0A - EmonPi Power Packet
+  byte  hour, min, sec, day, month, year ;
   int utilityW, solarW, utilityKwh, solarKwh;
 } PayloadTX;         // neat way of packaging data for RF comms
 #endif
@@ -94,7 +103,7 @@ PayloadGLCD emonglcd;
 //---------------------------------------------------
 //#define emonGLCDV1.3               // un-comment if using older V1.3 emonGLCD PCB - enables required internal pull up resistors. Not needed for V1.4 onwards
 const int SolarPV_type = 1;          // Select solar PV wiring type - Type 1 is when use and gen can be monitored seperatly. Type 2 is when gen and use can only be monitored together, see solar PV application documentation for more info
-const int maxgen = 5900;            // peak output of soalr PV system in W - used to calculate when to change cloud icon to a sun
+const int maxgen = 6900;            // peak output of soalr PV system in W - used to calculate when to change cloud icon to a sun
 byte PV_gen_offset = 5;       // When generation drops below this level generation will be set to zero - used to force generation level to zero at night
 
 const int greenLED = 6;             // Green tri-color LED
@@ -109,9 +118,12 @@ const int switch3 = 19;
 //---------------------------------------------------
 int hour = 12, minute = 0;
 double usekwh = 0, genkwh = 0;
-//double use_history[7], gen_history[7];
 int cval_use, cval_gen;
 byte page = 1;
+
+#ifdef ENABLE_HIST
+double use_history[7], gen_history[7];
+#endif
 
 
 //---------------------------------------------------
@@ -155,6 +167,8 @@ void setup()
   digitalWrite(switch1, HIGH); digitalWrite(switch2, HIGH); digitalWrite(switch3, HIGH);
 #endif
 
+  //Set Date to a reasonable default (midnight, Jan1, 2020)
+  RTC.adjust(DateTime(2020, 1, 1, 0, 0, 0));    
 }
 
 //--------------------------------------------------------------------------------------------
@@ -181,11 +195,11 @@ void loop()
 
 #else
 
-    if (node_id == EMONPI && sizeof(emontx) == rf12_len && rf12_data[0] == MYNODE)
+    if (node_id == EMONPI && sizeof(emontx) == rf12_len && rf12_data[1] == 0x0A)
     {
       emontx = *(PayloadTX*) rf12_data;
       last_emontx = millis();
-      RTC.adjust(DateTime(2018, 1, 1, emontx.hour, emontx.min, emontx.sec));
+      RTC.adjust(DateTime(emontx.year, emontx.month, emontx.day, emontx.hour, emontx.min, emontx.sec));
       last_emonbase = millis();
     }
 
@@ -234,21 +248,19 @@ void loop()
 
 
 
-    if (last_hour == 23 && hour == 00)
-    {
-      // int i; for (i = 6; i > 0; i--) gen_history[i] = gen_history[i - 1];
+    if (last_hour == 23 && hour == 00) {
+#ifdef ENABLE_HIST
+      int i; for (i = 6; i > 0; i--) gen_history[i] = gen_history[i - 1];
+      for (i = 6; i > 0; i--) use_history[i] = use_history[i - 1];
+#endif
       genkwh = 0;
-      //for (i = 6; i > 0; i--) use_history[i] = use_history[i - 1];
       usekwh = 0;
-
     }
-    // gen_history[0] = genkwh;
-    // use_history[0] = usekwh;
 
-
-
-
-
+#ifdef ENABLE_HIST
+    gen_history[0] = genkwh;
+    use_history[0] = usekwh;
+#endif
 
 
     if (cval_gen < PV_gen_offset) cval_gen = 0;              //set generation to zero when generation level drops below a certian level (at night) eg. 20W
@@ -257,11 +269,12 @@ void loop()
     switch_state = digitalRead(switch1);
     if (!last_switch_state && switch_state) {
       page += 1;
-      if (page > 3) page = 1;
+
+      if (page > NUMPAGES) page = 1;
     }
 
     last_switch_state = switch_state;
-    switch_state = digitalRead(switch1);
+    switch_state = digitalRead(switch2);
     if (!last_switch_state && switch_state) {
       if ( PV_gen_offset != 0 ) {
         PV_gen_offset = 0 ;
@@ -274,25 +287,28 @@ void loop()
     if (page == 1)
     {
       //use, usekwh, gen,    maxgen, genkwh, temp, mintemp, maxtemp, hour, minute, last_emontx, last_emonbase)
-      draw_solar_page(cval_use, usekwh, cval_gen, maxgen, genkwh, temp, mintemp, maxtemp, hour, minute, last_emontx, last_emonbase);
+      draw_solar_page(cval_use, usekwh, cval_gen, maxgen, genkwh, temp, mintemp, maxtemp, now, last_emontx, last_emonbase);
       glcd.refresh();
     }
     else if (page == 2)
     {
       draw_power_page( "Utility Power" , (cval_use - cval_gen), "USED", usekwh);
-      draw_temperature_time_footer(temp, mintemp, maxtemp, hour, minute);
+      draw_temperature_time_footer(temp, mintemp, maxtemp, now);
       glcd.refresh();
     }
     else if (page == 3)
     {
       draw_power_page( "Solar Power" , cval_gen, "GEN", genkwh);
-      draw_temperature_time_footer(temp, mintemp, maxtemp, hour, minute);
+      draw_temperature_time_footer(temp, mintemp, maxtemp, now);
       glcd.refresh();
     }
+#ifdef ENABLE_HIST
     else if (page == 4)
     {
-      //draw_history_page(gen_history, use_history);
+      draw_history_page(gen_history, use_history);
     }
+#endif
+
 
     int LDR = analogRead(LDRpin);                     // Read the LDR Value so we can work out the light level in the room.
     int LDRbacklight = map(LDR, 0, 1023, 1, 250);    // Map the data from the LDR from 0-1023 (Max seen 1000) to var GLCDbrightness min/max
@@ -300,11 +316,19 @@ void loop()
     //if ((hour > 23) ||  (hour < 6)) glcd.backLight(0); else
     glcd.backLight(LDRbacklight);
 
-    int PWRleds = map(cval_use - cval_gen, 0, maxgen, 0, 255);  // Map importing value from (LED brightness - cval3 is the smoothed grid value - see display above
+    int PWRleds = 0 ;
+
+    if (PV_gen_offset == 0) {
+      PWRleds = map(cval_use, 0, maxgen, 0, 255);  // No PV been generated, map the LED brightness to used (aka utility) power only, with maxgen being the maximum
+
+    } else {
+      PWRleds = map(cval_use - cval_gen, 0, maxgen, 0, 255);  // Map importing value from (LED brightness - cval3 is the smoothed grid value - see display above
+
+    }
     if (PWRleds < 0) PWRleds = PWRleds * -1;                    // keep it positive
     PWRleds = constrain(PWRleds, 0, 255);                       // Constrain the value to make sure its a PWM value 0-255
 
-    if (cval_gen > PV_gen_offset) {
+    if (cval_gen >= PV_gen_offset) {
       if (cval_gen > cval_use) {            //show green LED when gen>consumption cval are the smooth curve values
         analogWrite(redLED, 0);
         analogWrite(greenLED, PWRleds);
