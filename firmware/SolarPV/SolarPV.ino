@@ -57,7 +57,7 @@ RTC_Millis RTC;
 //--------------------------------------------------------------------------------------------
 // RFM12B Settings
 //--------------------------------------------------------------------------------------------
-#define MYNODE 20            // Should be unique on network, node ID 30 reserved for base station
+#define MYNODE 21            // Should be unique on network, node ID 30 reserved for base station
 #define RF_freq RF12_433MHZ     // frequency - match to same frequency as RFM12B module (change to 868Mhz or 915Mhz if appropriate)
 #define group 210            // network group, must be same as emonTx and emonBase
 #define EMONPI 5            //id of EMONPI base (where transmissions come from)
@@ -337,7 +337,7 @@ void loop()
     int LDR = analogRead(LDRpin);                     // Read the LDR Value so we can work out the light level in the room.
     int LDRbacklight = map(LDR, 0, 1023, 1, 250);    // Map the data from the LDR from 0-1023 (Max seen 1000) to var GLCDbrightness min/max
     LDRbacklight = constrain(LDRbacklight, 0, 255);   // Constrain the value to make sure its a PWM value 0-255
-    //if ((hour > 23) ||  (hour < 6)) glcd.backLight(0); else
+    if ((hour > 23) ||  (hour < 6)) glcd.backLight(0); else
     glcd.backLight(LDRbacklight);
 
     int PWRleds = 0 ;
