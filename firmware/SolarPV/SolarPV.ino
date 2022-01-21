@@ -98,6 +98,25 @@ typedef struct {
 } PayloadGLCD;
 PayloadGLCD emonglcd;
 
+
+typedef struct
+{
+  // byte destID = 0 ; // when sending to EMON we change this to be the address of EMON node
+  byte stnID = 0 ; //  WH1050 station id
+  byte lowBatt = 0 ; // battery status
+  float tempC = 0 ; // temp in Deg C
+  byte relH = 0 ; // rel humidity
+  float windAvg = 0 ; // wind avg m/s
+  float windGust = 0 ; // wind gust m/s
+  float rain = 0 ;    // rain in mm as reported by sensor, cumlative
+  float hpa = 0 ;     //Pressure  (from BMP280 sensor)
+  float intempC = 0 ; //inside temp (from BMP280 sensor)
+  long  lastHeard = 0 ;  //millis from when we last heard from this station
+} wh1050Payload ;
+
+
+wh1050Payload wx ;
+
 //---------------------------------------------------
 // emonGLCD SETUP
 //---------------------------------------------------
@@ -132,7 +151,7 @@ double use_history[7], gen_history[7];
 #define ONE_WIRE_BUS 5              // temperature sensor connection - hard wired
 OneWire oneWire(ONE_WIRE_BUS);
 DallasTemperature sensors(&oneWire);
-double temp, maxtemp, mintemp;
+double intemp, outtemp, maxtemp, mintemp;
 
 
 //--------------------------------------------------------------------------------------------
@@ -156,8 +175,8 @@ void setup()
 
   sensors.begin();                         // start up the DS18B20 temp sensor onboard
   sensors.requestTemperatures();
-  temp = (sensors.getTempCByIndex(0));     // get inital temperture reading
-  mintemp = temp; maxtemp = temp;          // reset min and max
+  intemp = (sensors.getTempCByIndex(0));     // get inital temperture reading
+  mintemp = intemp; maxtemp = intemp;          // reset min and max
 
   pinMode(greenLED, OUTPUT);
   pinMode(redLED, OUTPUT);
@@ -201,6 +220,11 @@ void loop()
       last_emontx = millis();
       RTC.adjust(DateTime(emontx.year, emontx.month, emontx.day, emontx.hour, emontx.min, emontx.sec));
       last_emonbase = millis();
+    } else if ( sizeof(wx) == rf12_len )     {
+      //sniff the weather station packet to get external temperature
+       wx = *(wh1050Payload*) rf12_data;
+       outtemp = wx.tempC ;
+  
     }
 
 
@@ -287,19 +311,19 @@ void loop()
     if (page == 1)
     {
       //use, usekwh, gen,    maxgen, genkwh, temp, mintemp, maxtemp, hour, minute, last_emontx, last_emonbase)
-      draw_solar_page(cval_use, usekwh, cval_gen, maxgen, genkwh, temp, mintemp, maxtemp, now, last_emontx, last_emonbase);
+      draw_solar_page(cval_use, usekwh, cval_gen, maxgen, genkwh, intemp, outtemp, now, last_emontx, last_emonbase);
       glcd.refresh();
     }
     else if (page == 2)
     {
       draw_power_page( "Utility Power" , (cval_use - cval_gen), "USED", usekwh);
-      draw_temperature_time_footer(temp, mintemp, maxtemp, now);
+      draw_temperature_time_footer(intemp, mintemp, maxtemp, now);
       glcd.refresh();
     }
     else if (page == 3)
     {
       draw_power_page( "Solar Power" , cval_gen, "GEN", genkwh);
-      draw_temperature_time_footer(temp, mintemp, maxtemp, now);
+      draw_temperature_time_footer(intemp, mintemp, maxtemp, now);
       glcd.refresh();
     }
 #ifdef ENABLE_HIST
@@ -351,13 +375,13 @@ void loop()
     sensors.requestTemperatures();
     double rawtemp = (sensors.getTempCByIndex(0));
     if ((rawtemp > -30) && (rawtemp < 70)) {
-      temp = rawtemp;            //is temperature withing reasonable limits?
-      emonglcd.temperature = (int) (temp * 100);                          // set emonglcd payload
+      intemp = rawtemp;            //is temperature withing reasonable limits?
+      emonglcd.temperature = (int) (intemp * 100);                          // set emonglcd payload
       rf12_sendNow(0, &emonglcd, sizeof emonglcd);                     //send temperature data via RFM12B using new rf12_sendNow wrapper -glynhudson
       rf12_sendWait(2);
     }
-    if (temp > maxtemp) maxtemp = temp;
-    if (temp < mintemp) mintemp = temp;
+    if (intemp > maxtemp) maxtemp = intemp;
+    if (intemp < mintemp) mintemp = intemp;
 
 
   }

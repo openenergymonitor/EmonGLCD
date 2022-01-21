@@ -3,6 +3,10 @@
 #include "utility/font_helvB12.h"
 #include "utility/font_clR4x6.h"
 #include "utility/font_clR6x8.h"
+#include "utility/font_helvB08.h"
+#include "utility/font_lubB12.h"
+
+
 
 int MINTEMP = -25;
 int MAXTEMP = 60;
@@ -120,11 +124,11 @@ void draw_temperature_time_footer(double temp, double mintemp, double maxtemp, D
   char str[10];
   char str2[5];
 
-  /*toggleTemp is incremented every call (approx 200ms) , 
-   *when it reaches 127 display temperatures, when it rolls over to 0 display date
-   *resulting in display toggling between both every 25.4 secs
-   */
-    static byte toggleTemp = 0 ; 
+  /*toggleTemp is incremented every call (approx 200ms) ,
+    when it reaches 127 display temperatures, when it rolls over to 0 display date
+    resulting in display toggling between both every 25.4 secs
+  */
+  static byte toggleTemp = 0 ;
 
   glcd.drawLine(0, 47, 128, 47, WHITE);     //middle horizontal line
 
@@ -198,7 +202,7 @@ void draw_temperature_time_footer(double temp, double mintemp, double maxtemp, D
 //------------------------------------------------------------------
 // Draws the Solar import/export page
 //------------------------------------------------------------------
-void draw_solar_page(double use, double usekwh, double gen, double maxgen, double genkwh, double temp, double mintemp, double maxtemp, DateTime now, unsigned long last_emontx, unsigned long last_emonbase)
+void draw_solar_page(double use, double usekwh, double gen, double maxgen, double genkwh, double intemp, double outemp, DateTime now, unsigned long last_emontx, unsigned long last_emonbase)
 {
 
 
@@ -211,8 +215,11 @@ void draw_solar_page(double use, double usekwh, double gen, double maxgen, doubl
   glcd.clear();
   glcd.fillRect(0, 0, 128, 64, 0);
 
-  glcd.drawLine(64, 0, 64, 64, WHITE);      //top vertical line
-  glcd.drawLine(0, 32, 128, 32, WHITE);     //middle horizontal line
+  //glcd.drawLine(64, 0, 64, 64, WHITE);      //top vertical line
+  //glcd.drawLine(0, 18, 128, 18, WHITE);     //top horizontal line
+  glcd.drawLine(0, 26, 128, 26, WHITE);     //2nd horizontal line
+
+  glcd.drawLine(0, 48, 128, 48, WHITE);     //2nd horizontal line
 
   //variables to store conversion
   char str[50];
@@ -254,30 +261,52 @@ void draw_solar_page(double use, double usekwh, double gen, double maxgen, doubl
   glcd.setFont(font_clR6x8);
 
   // Indicator for consuming or generating
-  glcd.drawBitmap(51, 34, icon_lines_12x12, 16, 12, 1);
-  if (importing == 1) glcd.drawString_P(35, 34, PSTR("<<"));
-  else
-  {
-    glcd.drawString_P(35, 34, PSTR(">>"));
-    grid = grid * -1;                                  //keep grid import/export positive - arrows change direction to indicate power flow direction
+  if (importing == 1) {
+    glcd.drawBitmap(60, 0, icon_lines_12x12, 16, 12, 1);  //pylon
+    //glcd.drawString(57, 15, PSTR(">>"));
+
   }
 
-  //big bold font
+
   glcd.setFont(font_helvB14);
 
-  // Amount of power currently being used
-  if (use > 1000)
+
+  /*
+    //big bold font
+    glcd.setFont(font_helvB14);
+
+    // Amount of power currently being used
+    if (use > 1000)
+    {
+      dtostrf(use / 1000, 2, 1, str);
+      strcat(str, "kw");
+    }
+    else
+    {
+      itoa((int)use, str, 10);
+      strcat(str, "w");
+    }
+    glcd.drawBitmap(49, 0, icon_home_13x12, 16, 12, 1);
+    glcd.drawString(3, 9, str);
+
+  */
+
+
+  // Amount of energy coming from or going into the grid
+  if (grid < -1000 || grid > 1000)
   {
-    dtostrf(use / 1000, 2, 1, str);
+    dtostrf(grid / 1000, 2, 1, str);
     strcat(str, "kw");
   }
   else
   {
-    itoa((int)use, str, 10);
+    itoa((int)grid, str, 10);
     strcat(str, "w");
   }
-  glcd.drawBitmap(49, 0, icon_home_13x12, 16, 12, 1);
-  glcd.drawString(3, 9, str);
+  glcd.drawString(3, 0, str);
+
+
+
 
   // Amount of energy being generated
   if (gen > 1000)
@@ -291,78 +320,72 @@ void draw_solar_page(double use, double usekwh, double gen, double maxgen, doubl
     strcat(str, "w");
   }
   //if (gen>maxgen) maxgen=gen;                  -could cause an error if any large spurious readings are detected, max gen can be set manually at beginning of sketch
-  imageindex = int(gen / maxgen * 5 - 0.5);
-  glcd.drawBitmap(115, 0, icon_solar_12x12[imageindex], 16, 12, 1);
-  glcd.drawString(71, 9, str);
+  //imageindex = int(gen / maxgen * 5 - 0.5);
+  //      glcd.drawBitmap(57, 0, icon_solar_12x12[imageindex], 16, 12, 1);  //clouds
 
-  // Amount of energy coming from or going into the grid
-  if (grid < -1000 || grid > 1000)
-  {
-    dtostrf(grid / 1000, 2, 1, str);
-    strcat(str, "kw");
-  }
-  else
-  {
-    itoa((int)grid, str, 10);
-    strcat(str, "w");
-  }
-  glcd.drawString(3, 42, str);
+  glcd.drawString(80, 0, str);
 
-  // Temperature
-  dtostrf(temp, 0, 1, str);
-  strcat(str, "c");
-  if (temp > MAXTEMP)
-  {
-    imageindex = 5;
-  }
-  else
-  {
-    if (temp < MINTEMP) {
-      imageindex = 0;
-      strcpy(str, "--.- c") ;
-    } else {
-      imageindex = int((temp - MINTEMP) / (MAXTEMP - MINTEMP) * 5 - 0.5);
-    }
-  }
-  glcd.drawBitmap(120, 40, icon_heating_8x16[imageindex], 8, 16, 1);
-  glcd.drawString(70, 42, str);
 
-  glcd.setFont(font_clR4x6);   		//small font - Kwh
 
+  glcd.setFont(font_clR4x6);       //small font - Kwh
+
+  strcpy (str, "") ;
   // Kwh consumed today
   dtostrf(usekwh, 0, 1, str);
-  strcat(str, "kWh today");
-  glcd.drawString(6, 26, str);
+  strcat(str, "kWh");
+  glcd.drawString(6, 18, str);
+
+  strcpy(str, "Today") ;
+  glcd.drawString(54, 18, str);
 
   // Kwh generated today
   dtostrf(genkwh, 0, 1, str);
-  strcat(str, "kWh today");
-  glcd.drawString(71, 26, str);
+  strcat(str, "kWh");
+  glcd.drawString(90, 18, str);
 
-  // Minimum and maximum temperatures
-  if (mintemp < MINTEMP || maxtemp < MINTEMP ) {
-    strcpy (str, "--c");
-  } else {
-    itoa((int)mintemp, str, 10);
-    strcat(str, "c");
+
+  glcd.setFont(font_clR4x6);       //small font - Kwh
+  strcpy (str, "Out") ;
+  glcd.drawString(0, 50, str);
+
+
+  strcpy (str, "In") ;
+  glcd.drawString(115, 50, str);
+
+  // Temperature
+  glcd.setFont(font_helvB08);
+
+  //in temp
+  strcpy (str, "") ;
+  dtostrf(outtemp, 0, 1, str);
+  strcat(str, "c");
+  glcd.drawString(12, 55, str);
+
+  //out temp
+  strcpy (str, "") ;
+  dtostrf(intemp, 0, 1, str);
+  strcat(str, "c");
+  glcd.drawString(85, 55, str);
+
+
+  //Middle of the bottom temp bar cloud/sunshine icon
+  if (gen > PV_gen_offset ) {
+
+    imageindex = int(gen / maxgen * 5 - 0.5);
+    glcd.drawBitmap(60, 49, icon_solar_12x12[imageindex], 16, 12, 1); //0 is 3 clouds ,1 is sun with single dot as rays, 2 is sun with larger rays, 3 is sun with heavier rays, 4 is sun with v heavy rays
   }
-  glcd.drawString_P(68, 58, PSTR("min"));
-  glcd.drawString(82, 58, str);
 
-  if (maxtemp > MINTEMP) {
-    itoa((int)maxtemp, str, 10);
-    strcat(str, "c");
-  }
-
-  glcd.drawString_P(97, 58, PSTR("max"));
-  glcd.drawString(111, 58, str);
 
 #ifdef EMONTX
 
   //glcd.drawString_P(5, 58, PSTR("Time: "));
-  strcpy(str,"Time:  ") ;
+  strcpy(str, "Time:  ") ;
 
 #else
+
+  glcd.setFont(font_lubB12);
+
+
   // Current date + time
   itoa((int)now.day(), str, 10);
   strcat(str, "/");
@@ -376,15 +399,40 @@ void draw_solar_page(double use, double usekwh, double gen, double maxgen, doubl
   strcat (str, " ") ;
 #endif
 
+  glcd.drawString(5, 30, str);
+
+
+  strcpy(str, "") ;
+
+  //glcd.drawString_P(5, 58, PSTR("Time:"));
   if (now.hour() < 10) {
-    strcat(str, "0") ;
+    strcpy(str, "0") ;
+    itoa((int)now.hour(), str2, 10);
+    strcat(str, str2) ;
+  } else {
+    itoa((int)now.hour(), str, 10);
   }
-  itoa((int)now.hour(), str2, 10);
-  strcat (str, str2) ;
-  if  (now.minute() < 10) strcat(str, ":0"); else strcat(str, ":");
+
+  glcd.drawString(75, 30, str);
+
+  if (now.second() % 2 == 0) {
+    strcpy (str, ":") ;
+  } else {
+    strcpy (str, "") ;
+  }
+  glcd.drawString(95, 30, str);
+  strcpy (str, "") ;
+
+  if  (now.minute() < 10) strcat(str, "0"); else strcat(str, "");
+
+
   itoa((int)now.minute(), str2, 10);
   strcat(str, str2);
-  glcd.drawString(4, 58, str);
+
+
+  glcd.drawString(100, 30, str);
+
+
 
 }
 
