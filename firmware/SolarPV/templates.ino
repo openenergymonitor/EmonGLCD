@@ -210,7 +210,7 @@ void draw_solar_page(double use, double usekwh, double gen, double maxgen, doubl
 
   int importing = 0;
   if (use > gen) importing = 1;
-  double grid = use - gen;
+  //double grid = use - gen;
 
   glcd.clear();
   glcd.fillRect(0, 0, 128, 64, 0);
@@ -270,69 +270,27 @@ void draw_solar_page(double use, double usekwh, double gen, double maxgen, doubl
 
   glcd.setFont(font_helvB14);
 
-
-  /*
-    //big bold font
-    glcd.setFont(font_helvB14);
-
-    // Amount of power currently being used
-    if (use > 1000)
-    {
-      dtostrf(use / 1000, 2, 1, str);
-      strcat(str, "kw");
-    }
-    else
-    {
-      itoa((int)use, str, 10);
-      strcat(str, "w");
-    }
-    glcd.drawBitmap(49, 0, icon_home_13x12, 16, 12, 1);
-    glcd.drawString(3, 9, str);
-
-  */
-
-
   // Amount of energy coming from or going into the grid
-  if (grid < -1000 || grid > 1000)
-  {
-    dtostrf(grid / 1000, 2, 1, str);
-    strcat(str, "kw");
-  }
-  else
-  {
-    itoa((int)grid, str, 10);
-    strcat(str, "w");
-  }
-  glcd.drawString(3, 0, str);
-
-
+ 
+    dtostrf(use / 1000, 2, 1, str);
+    glcd.drawString(3, 0, str);
 
 
   // Amount of energy being generated
-  if (gen > 1000)
-  {
     dtostrf(gen / 1000, 2, 1, str);
-    strcat(str, "kw");
-  }
-  else
-  {
-    itoa((int)gen, str, 10);
-    strcat(str, "w");
-  }
-  //if (gen>maxgen) maxgen=gen;                  -could cause an error if any large spurious readings are detected, max gen can be set manually at beginning of sketch
-  //imageindex = int(gen / maxgen * 5 - 0.5);
-  //      glcd.drawBitmap(57, 0, icon_solar_12x12[imageindex], 16, 12, 1);  //clouds
-
-  glcd.drawString(80, 0, str);
+    glcd.drawString(88, 0, str);
 
 
 
-  glcd.setFont(font_clR4x6);       //small font - Kwh
+  glcd.setFont(font_clR4x6);       //small font - Kw & Kwh
+  glcd.drawString(36, 8, "Kw");  
+  glcd.drawString(114, 8, "Kw");
+
 
   strcpy (str, "") ;
   // Kwh consumed today
   dtostrf(usekwh, 0, 1, str);
-  strcat(str, "kWh");
+  strcat(str, "Kwh");
   glcd.drawString(6, 18, str);
 
   strcpy(str, "Today") ;
@@ -340,7 +298,7 @@ void draw_solar_page(double use, double usekwh, double gen, double maxgen, doubl
 
   // Kwh generated today
   dtostrf(genkwh, 0, 1, str);
-  strcat(str, "kWh");
+  strcat(str, "Kwh");
   glcd.drawString(90, 18, str);
 
 
@@ -376,16 +334,11 @@ void draw_solar_page(double use, double usekwh, double gen, double maxgen, doubl
   }
 
 
-#ifdef EMONTX
 
-  //glcd.drawString_P(5, 58, PSTR("Time: "));
-  strcpy(str, "Time:  ") ;
-
-#else
 
   glcd.setFont(font_lubB12);
 
-
+/*
   // Current date + time
   itoa((int)now.day(), str, 10);
   strcat(str, "/");
@@ -394,17 +347,14 @@ void draw_solar_page(double use, double usekwh, double gen, double maxgen, doubl
   strcat(str, str2);
   strcat(str, "/");
 
-  itoa((int)(now.year() - 2000), str2, 10);
-  strcat(str, str2);
-  strcat (str, " ") ;
-#endif
-
+  //itoa((int)(now.year() - 2000), str2, 10);
+  //strcat(str, str2);
+  //strcat (str, " ") ;
   glcd.drawString(5, 30, str);
-
+*/
 
   strcpy(str, "") ;
-
-  //glcd.drawString_P(5, 58, PSTR("Time:"));
+ 
   if (now.hour() < 10) {
     strcpy(str, "0") ;
     itoa((int)now.hour(), str2, 10);
@@ -413,26 +363,21 @@ void draw_solar_page(double use, double usekwh, double gen, double maxgen, doubl
     itoa((int)now.hour(), str, 10);
   }
 
-  glcd.drawString(75, 30, str);
+  glcd.drawString(40, 30, str);
 
   if (now.second() % 2 == 0) {
     strcpy (str, ":") ;
   } else {
     strcpy (str, "") ;
   }
-  glcd.drawString(95, 30, str);
+  glcd.drawString(61, 30, str);
   strcpy (str, "") ;
 
   if  (now.minute() < 10) strcat(str, "0"); else strcat(str, "");
 
-
   itoa((int)now.minute(), str2, 10);
   strcat(str, str2);
-
-
-  glcd.drawString(100, 30, str);
-
-
+  glcd.drawString(68, 30, str);
 
 }
 

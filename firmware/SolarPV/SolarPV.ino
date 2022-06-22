@@ -57,7 +57,7 @@ RTC_Millis RTC;
 //--------------------------------------------------------------------------------------------
 // RFM12B Settings
 //--------------------------------------------------------------------------------------------
-#define MYNODE 21            // Should be unique on network, node ID 30 reserved for base station
+#define MYNODE 20            // Should be unique on network, node ID 30 reserved for base station
 #define RF_freq RF12_433MHZ     // frequency - match to same frequency as RFM12B module (change to 868Mhz or 915Mhz if appropriate)
 #define group 210            // network group, must be same as emonTx and emonBase
 #define EMONPI 5            //id of EMONPI base (where transmissions come from)
@@ -263,9 +263,9 @@ void loop()
     }
 #else
     //if data came from EMONPI, use what it told us for the kwh & current values
-    usekwh = (emontx.utilityKwh  + emontx.solarKwh ) / 100.0 ;
+    usekwh = emontx.utilityKwh / 100.0 ;
     genkwh = emontx.solarKwh / 100.0 ;
-    cval_use = emontx.utilityW + emontx.solarW ;
+    cval_use = emontx.utilityW ;
     cval_gen = emontx.solarW ;
 #endif
 
@@ -316,7 +316,7 @@ void loop()
     }
     else if (page == 2)
     {
-      draw_power_page( "Utility Power" , (cval_use - cval_gen), "USED", usekwh);
+      draw_power_page( "Utility Power" , (cval_use), "USED", usekwh);
       draw_temperature_time_footer(intemp, mintemp, maxtemp, now);
       glcd.refresh();
     }
