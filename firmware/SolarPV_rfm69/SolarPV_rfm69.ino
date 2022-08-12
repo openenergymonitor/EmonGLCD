@@ -4,6 +4,16 @@
 // emonGLCD documentation http://openEnergyMonitor.org/emon/emonglcd
 // solar PV monitor build documentation: http://openenergymonitor.org/emon/applications/solarpv
 
+
+// This version is ONLY for use with emonGLCD using a RFM69 module and uses RF69 native packets.
+// Therefore your EMONPI needs to be running firmware that supports that.
+// Please see this thread for details:
+// https://community.openenergymonitor.org/t/the-emonpicm/18173/36
+// This version does not YET support RF12 radio modules and it is proposed it will using them with RF69 native packets.
+
+// It does work well with emonPI and you will need the companion software running on it to send the data to emonGLCD
+// It should be included in this git repo.
+
 // For use with emonTx setup with 2CT with CT 1 monitoring consumption/grid and CT 2 monitoring PV generation .
 // The CT's should be clipped on with the orientation so grid reading is postive when importing and negative when exporting. Generation reading should always be positive.
 
@@ -31,7 +41,7 @@
 //	- OneWire library	http://www.pjrc.com/teensy/td_libs_OneWire.html
 //	- DallasTemperature	http://download.milesburton.com/Arduino/MaximTemperature
 //                           or https://github.com/milesburton/Arduino-Temperature-Control-Library
-//	- JeeLib		https://github.com/jcw/jeelib
+//	- rf69.h		https://git.jeelabs.org/embello/tree/lib/driver
 //	- RTClib		https://github.com/adafruit/RTClib
 //	- GLCD_ST7565		https://github.com/openenergymonitor/glcdlib
 //
@@ -188,8 +198,6 @@ void setup()
   glcd.begin(0x19);
   glcd.backLight(200);
 
-  Serial.begin (57600);
-  Serial.println("hello");
   sensors.begin();                         // start up the DS18B20 temp sensor onboard
   sensors.requestTemperatures();
   intemp = (sensors.getTempCByIndex(0));     // get inital temperture reading
@@ -216,9 +224,7 @@ void loop()
   int len = rf.receive(&nativeMsg, sizeof(nativeMsg));
 
   if (len > 0 ) {
-    Serial.print("Received something len:"); Serial.println(len);
     char rfdata[len] ;
-
     byte sender = nativeMsg[1];
 
 #ifdef EMONTX
