@@ -42,9 +42,10 @@ First you need to add the following to your emonhub.conf file for each emonGlcd 
      scales = 0.01,1
      units = c
   [[[tx]]]
-     names =nodeid,hour,minute,second,utilityW,solarW,utilityKwh,solarKwh
-     datacodes =b,b,b,h,h,H,H
-     units = h,min,sec,W,W,kwh,kwh
+       [[[tx]]]
+     names = type,hour,minute,second,day,month,year,utilityW,solarW,utilityKwh,solarKwh
+     datacodes =b,b,b,b,b,b,b,h,h,H,H
+     units = type,h,min,sec,day,mon,year,W,W,kwh,kwh
 ```
 
 

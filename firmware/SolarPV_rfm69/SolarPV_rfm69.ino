@@ -4,6 +4,16 @@
 // emonGLCD documentation http://openEnergyMonitor.org/emon/emonglcd
 // solar PV monitor build documentation: http://openenergymonitor.org/emon/applications/solarpv
 
+
+// This version is ONLY for use with emonGLCD using a RFM69 module and uses RF69 native packets.
+// Therefore your EMONPI needs to be running firmware that supports that.
+// Please see this thread for details:
+// https://community.openenergymonitor.org/t/the-emonpicm/18173/36
+// This version does not YET support RF12 radio modules and it is proposed it will using them with RF69 native packets.
+
+// It does work well with emonPI and you will need the companion software running on it to send the data to emonGLCD
+// It should be included in this git repo.
+
 // For use with emonTx setup with 2CT with CT 1 monitoring consumption/grid and CT 2 monitoring PV generation .
 // The CT's should be clipped on with the orientation so grid reading is postive when importing and negative when exporting. Generation reading should always be positive.
 
@@ -31,7 +41,7 @@
 //	- OneWire library	http://www.pjrc.com/teensy/td_libs_OneWire.html
 //	- DallasTemperature	http://download.milesburton.com/Arduino/MaximTemperature
 //                           or https://github.com/milesburton/Arduino-Temperature-Control-Library
-//	- JeeLib		https://github.com/jcw/jeelib
+//	- rf69.h		https://git.jeelabs.org/embello/tree/lib/driver
 //	- RTClib		https://github.com/adafruit/RTClib
 //	- GLCD_ST7565		https://github.com/openenergymonitor/glcdlib
 //
@@ -41,8 +51,14 @@
 //
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
-#define RF69_COMPAT 1 // set to 1 to use RFM69CW 
-#include <JeeLib.h>   // make sure V12 (latest) is used if using RFM69CW
+
+//#define RF69_COMPAT 1 // set to 1 to use RFM69CW
+//#include <JeeLib.h>   // make sure V12 (latest) is used if using RFM69CW
+// RFM interface
+#include "spi.h"                                                       // Requires "RFM69 Native" JeeLib Driver
+#include "rf69.h"
+RF69<SpiDev10> rf;
+
 
 #include <GLCD_ST7565.h>
 #include <avr/pgmspace.h>
@@ -55,13 +71,18 @@ GLCD_ST7565 glcd;
 RTC_Millis RTC;
 
 //--------------------------------------------------------------------------------------------
-// RFM12B Settings
+// RF Settings
 //--------------------------------------------------------------------------------------------
 #define MYNODE 20            // Should be unique on network, node ID 30 reserved for base station
-#define RF_freq RF12_433MHZ     // frequency - match to same frequency as RFM12B module (change to 868Mhz or 915Mhz if appropriate)
+//#define RF_freq RF12_433MHZ     // frequency - match to same frequency as RFM12B module (change to 868Mhz or 915Mhz if appropriate)
 #define group 210            // network group, must be same as emonTx and emonBase
 #define EMONPI 5            //id of EMONPI base (where transmissions come from)
 #undef EMONTX   26          //if sniffing EMONTX data, set this to id of EMONTX, else undef and then expect data from EMONPI 
+
+
+byte nativeMsg[66];                                                    // 'Native' format message buffer
+
+
 
 #undef ENABLE_HIST        //enable / disable historic readings page (#define if desired)
 
@@ -78,12 +99,15 @@ RTC_Millis RTC;
 //---------------------------------------------------
 #ifdef EMONTX
 typedef struct {
-  //power1 = utilityW, power2 = solarW , other struct members we don't care about
+  //power1 = utilityW, power2 = solarW , other struct members we ignore in the code
+  byte hdr ;
+  byte src ;
   int utilityW, solarW, power3, Vrms;
 } PayloadTX;         // neat way of packaging data for RF comms
 #else
 typedef struct {
-  byte id ;
+  byte hdr ;
+  byte src ;
   byte type ;     //should always be 0A - EmonPi Power Packet
   byte  hour, min, sec, day, month, year ;
   int utilityW, solarW, utilityKwh, solarKwh;
@@ -101,7 +125,8 @@ PayloadGLCD emonglcd;
 
 typedef struct
 {
-  // byte destID = 0 ; // when sending to EMON we change this to be the address of EMON node
+  byte hdr ;
+  byte src ;
   byte stnID = 0 ; //  WH1050 station id
   byte lowBatt = 0 ; // battery status
   float tempC = 0 ; // temp in Deg C
@@ -168,7 +193,7 @@ unsigned long fast_update, slow_update;
 void setup()
 {
   delay(500); 				   //wait for power to settle before firing up the RF
-  rf12_initialize(MYNODE, RF_freq, group);
+  rf.init(MYNODE, 210, 434);
   delay(100);				   //wait for RF to settle befor turning on display
   glcd.begin(0x19);
   glcd.backLight(200);
@@ -187,7 +212,7 @@ void setup()
 #endif
 
   //Set Date to a reasonable default (midnight, Jan1, 2020)
-  RTC.adjust(DateTime(2020, 1, 1, 0, 0, 0));    
+  RTC.adjust(DateTime(2020, 1, 1, 0, 0, 0));
 }
 
 //--------------------------------------------------------------------------------------------
@@ -196,43 +221,51 @@ void setup()
 void loop()
 {
 
+  int len = rf.receive(&nativeMsg, sizeof(nativeMsg));
 
-  // Did we receive any commands via RF ?
-  if ( (rf12_recvDone() && rf12_crc == 0)  && ((rf12_hdr & RF12_HDR_CTL) == 0) ) {
-
-    int node_id = (rf12_hdr & 0x1F);
+  if (len > 0 ) {
+    char rfdata[len] ;
+    byte sender = nativeMsg[1];
 
 #ifdef EMONTX
-    if (node_id == EMONTX && sizeof(emontx) == rf12_len ) {
-      emontx = *(PayloadTX*) rf12_data; last_emontx = millis();
+    if (sender == EMONTX && len == sizeOf(emonTx) ) {
+      memcpy (rfdata, nativeMsg, len) ;
+      emontx = *(PayloadTX*) rfdata;
+      last_emontx = millis();
     }
 
-    if (node_id == 15) {
-      RTC.adjust(DateTime(2018, 1, 1, rf12_data[1], rf12_data[2], rf12_data[3]));
+    if (sender == 15) {     // I think this is EMONBASE sending the time
+      RTC.adjust(DateTime(2018, 1, 1, nativeMsg[3], nativeMsg[4], nativeMsg[5]));
       last_emonbase = millis();
     }
 
 #else
+    //Sanity with an EMONPI :)
 
-    if (node_id == EMONPI && sizeof(emontx) == rf12_len && rf12_data[1] == 0x0A)
-    {
-      emontx = *(PayloadTX*) rf12_data;
+    if (sender == EMONPI && nativeMsg[2] == 0x0A) {
+      //this packet is for us
+      memcpy (rfdata, nativeMsg, len) ;
+      emontx = *(PayloadTX*) rfdata;
       last_emontx = millis();
       RTC.adjust(DateTime(emontx.year, emontx.month, emontx.day, emontx.hour, emontx.min, emontx.sec));
       last_emonbase = millis();
-    } else if ( sizeof(wx) == rf12_len )     {
-      //sniff the weather station packet to get external temperature
-       wx = *(wh1050Payload*) rf12_data;
-       outtemp = wx.tempC ;
-  
+
     }
 
 
 #endif
 
+    //sniff my weather station packet to get external temperature displayed
+    if ( len == sizeof(wx))  {
+      memcpy (rfdata, nativeMsg, len) ;
+      wx = *(wh1050Payload*) rfdata;
+      outtemp = wx.tempC ;
+    }
+
+  } // if len>0
 
 
-  }
+
 
   //--------------------------------------------------------------------------------------------
   // Display update every 200ms
@@ -338,7 +371,7 @@ void loop()
     int LDRbacklight = map(LDR, 0, 1023, 1, 250);    // Map the data from the LDR from 0-1023 (Max seen 1000) to var GLCDbrightness min/max
     LDRbacklight = constrain(LDRbacklight, 0, 255);   // Constrain the value to make sure its a PWM value 0-255
     if ((hour > 23) ||  (hour < 6)) glcd.backLight(0); else
-    glcd.backLight(LDRbacklight);
+      glcd.backLight(LDRbacklight);
 
     int PWRleds = 0 ;
 
@@ -377,8 +410,10 @@ void loop()
     if ((rawtemp > -30) && (rawtemp < 70)) {
       intemp = rawtemp;            //is temperature withing reasonable limits?
       emonglcd.temperature = (int) (intemp * 100);                          // set emonglcd payload
-      rf12_sendNow(0, &emonglcd, sizeof emonglcd);                     //send temperature data via RFM12B using new rf12_sendNow wrapper -glynhudson
-      rf12_sendWait(2);
+      rf.send(0, &emonglcd, sizeof emonglcd);
+
+      /* rf12_sendNow(0, &emonglcd, sizeof emonglcd);                     //send temperature data via RFM12B using new rf12_sendNow wrapper -glynhudson
+        rf12_sendWait(2);*/
     }
     if (intemp > maxtemp) maxtemp = intemp;
     if (intemp < mintemp) mintemp = intemp;
